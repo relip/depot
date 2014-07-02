@@ -1,0 +1,40 @@
+import os
+
+SERVER_HOST = "0.0.0.0"
+SERVER_POST = 8000
+
+# Statement for enabling the development environment
+DEBUG = True
+
+SECRET_KEY = os.urandom(30)
+
+############################################################################
+##### ENSURE THIS VARIABLE IS SET TO FALSE AFTER CREATING NEEDED USERS #####
+############################################################################
+ENABLE_SIGNUP = True
+
+# RECOMMENDED: Set to True if you usually deal with large files.
+# XSendFile allows application to serve files more efficiently by
+# sending only path to httpd, then httpd reads directly from the given path and
+# sends it to client.
+HTTPD_USE_X_SENDFILE = False
+HTTPD_TYPE = "nginx"
+
+# Set base directory if you use nginx for proxy.
+HTTPD_BASE_DIR = "/"
+
+# Define the application directory
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))  
+
+SQLALCHEMY_DATABASE_URI = ""
+# SQLALCHEMY_ECHO = True
+
+UPLOAD_BASE_DIR = "/storage/"
+# This must be located under UPLOAD_BASE_DIR and must not starts with slash. 
+UPLOAD_DIRECTORY = "depot"
+
+# ----- DO NOT TOUCH BELOW THIS LINE -----
+
+UPLOAD_FULL_DIRECTORY = os.path.join(UPLOAD_BASE_DIR, UPLOAD_DIRECTORY)
+
+

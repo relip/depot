@@ -1,0 +1,3 @@
+from app import app
+
+app.run(host=app.config["SERVER_HOST"], port=app.config["SERVER_POST"])
