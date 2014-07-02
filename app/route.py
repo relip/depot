@@ -128,7 +128,6 @@ def api_tweetbot():
 	elif not model.User.query.filter(model.User.APIKey == request.args["api_key"]).first():
 		return abort(403)
 	else:
-		print request.files
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
 		result = json.loads(_store_file(request.files["media"]))
@@ -277,7 +276,6 @@ def file_transmit(path, fileData):
 			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), fileData.File.StoredPath)
 		return response
 	else:
-		print fileData.ActualName
 		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath),
 			mimetype=mimetypes.guess_type(fileData.ActualName)[0]))
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
