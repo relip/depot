@@ -49,7 +49,6 @@ class Path(db.Model):
 	__tablename__ = "Path"
 
 	Path = db.Column(db.String(255), primary_key=True, unique=True, index=True)
-	StoredPath = db.Column(db.Text)
 	ActualName = db.Column(db.String(255))
 	DownloadLimit = db.Column(db.Integer)
 	Downloaded = db.Column(db.Integer, default=0)

@@ -25,7 +25,7 @@ from flask.ext.login import login_required
 from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.login import current_user
-from flaskext.bcrypt import generate_password_hash, check_password_hash
+from flask.ext.bcrypt import generate_password_hash, check_password_hash
 
 from app import app
 from app import db
@@ -268,16 +268,17 @@ def file_transmit(path, fileData):
 	if app.config.get("HTTPD_USE_X_SENDFILE", False):
 		response = make_response()
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
-
+		response.headers["Content-Type"] = mimetypes.guess_type(fileData.ActualName)[0]
 		httpdType = app.config.get("HTTPD_TYPE", "nginx")
 
 		if httpdType == "apache" or httpdType == "lighttpd":
 			response.headers["X-Sendfile"] = os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath)
 		else: # nginx and others
 			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), fileData.File.StoredPath)
+			
 		return response
 	else:
-		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath),
+		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath,
 			mimetype=mimetypes.guess_type(fileData.ActualName)[0]))
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
 		return response
