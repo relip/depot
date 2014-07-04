@@ -50,10 +50,11 @@ def _store_file(fp):
 			newFilename = generateRandomString(32)
 			if not os.path.exists(os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)):
 				break
-		fp.save(os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename))
-
+		fullPath = os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)
+		fp.save(fullPath)
+		fileSize = os.stat(fullPath).st_size
 		fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename), 
-			md5sum, sha1sum)
+			md5sum, sha1sum, fileSize)
 		db.session.add(fileData)
 		db.session.flush()
 

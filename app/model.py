@@ -36,13 +36,14 @@ class File(db.Model):
 	StoredPath = db.Column(db.String(255))
 	MD5Sum = db.Column(db.String(32), index=True)
 	SHA1Sum = db.Column(db.String(40), index=True)
-
+	Size = db.Column(db.Integer)
 	Paths = db.relationship("Path")
 
-	def __init__(self, sp, m, s):
+	def __init__(self, sp, m, s, size):
 		self.StoredPath = sp
 		self.MD5Sum = m
 		self.SHA1Sum = s
+		self.Size = size
 
 class Path(db.Model):
 	__tablename__ = "Path"
