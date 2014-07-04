@@ -62,7 +62,7 @@ def _store_file(fp):
 	while True:
 		try:
 			newPath = model.Path(generateRandomString(int(pathLength)), fileData.No, 
-				realFilename, request.form.get("download_limit", 0), 
+				realFilename, int(time.time()), request.form.get("download_limit", 0), 
 				request.form.get("hide_after_limit_exceeded", False), request.form.get("group", None))
 			db.session.add(newPath)
 			db.session.commit()
@@ -129,6 +129,7 @@ def api_tweetbot():
 	elif not model.User.query.filter(model.User.APIKey == request.args["api_key"]).first():
 		return abort(403)
 	else:
+		print request.files
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
 		result = json.loads(_store_file(request.files["media"]))
@@ -278,8 +279,9 @@ def file_transmit(path, fileData):
 			
 		return response
 	else:
+		print fileData.ActualName
 		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath,
-			mimetype=mimetypes.guess_type(fileData.ActualName)[0]))
+			mimetype=mimetypes.guess_type(fileData.ActualName)[0])))
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
 		return response
 
