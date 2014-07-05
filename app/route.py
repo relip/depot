@@ -280,7 +280,7 @@ def file_transmit(path, fileData):
 		return response
 	else:
 		print fileData.ActualName
-		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath,
+		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath),
 			mimetype=mimetypes.guess_type(fileData.ActualName)[0])))
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
 		return response
