@@ -63,7 +63,8 @@ def _store_file(fp):
 		try:
 			newPath = model.Path(generateRandomString(int(pathLength)), fileData.No, 
 				realFilename, int(time.time()), request.form.get("download_limit", 0), 
-				request.form.get("hide_after_limit_exceeded", False), request.form.get("group", None))
+				True if request.form.get("hide_after_limit_exceeded", False) else False,
+				request.form.get("group", None))
 			db.session.add(newPath)
 			db.session.commit()
 			break
@@ -246,7 +247,7 @@ def overview():
 def file_information(path, fileData):
 	if fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0:
 		if fileData.HideAfterLimitExceeded:
-			return reder_template("no_such_file.html")
+			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
 
 	return render_template("file_information.html", data=fileData)
@@ -257,7 +258,7 @@ def file_information(path, fileData):
 def file_transmit(path, fileData):
 	if fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0:
 		if fileData.HideAfterLimitExceeded:
-			return reder_template("no_such_file.html")
+			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
 
 	fileData.Downloaded = model.Path.Downloaded + 1
@@ -281,7 +282,7 @@ def file_transmit(path, fileData):
 	else:
 		print fileData.ActualName
 		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath),
-			mimetype=mimetypes.guess_type(fileData.ActualName)[0])))
+			mimetype=mimetypes.guess_type(fileData.ActualName)[0]))
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
 		return response
 
