@@ -9,6 +9,8 @@ import traceback
 import json
 import time
 import mimetypes
+import urlparse
+import datetime
 
 from flask import render_template 
 from flask import send_from_directory
@@ -86,6 +88,12 @@ def hashfile(afile, hasher, blocksize=65536):
 def generateRandomString(n):
 	return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(n))
 
+def datetimeformat(value, format='%Y/%m/%d %H:%M:%S'):
+	return datetime.datetime.fromtimestamp(value).strftime(format)
+
+app.jinja_env.filters['datetimeformat'] = datetimeformat
+app.jinja_env.filters['urljoin'] = urlparse.urljoin
+
 @login_manager.user_loader
 def load_user(uid):
 	return model.User.query.filter(model.User.No == int(uid)).first()
@@ -113,6 +121,10 @@ def check_if_path_is_valid(mapper):
 def shutdown_session(exception=None):
 	db.session.remove()
 
+@app.route("/")
+def index():
+	return render_template("index.html")
+
 @app.route("/upload", methods=["GET", "POST"])
 @login_required
 def upload():
@@ -123,6 +135,13 @@ def upload():
 	else:
 		return render_template("upload.html")
 
+@app.route("/api/regenerate_key")
+def api_regenerate_key():
+	uinfo = load_user(session["user_id"])
+	uinfo.APIKey = generateRandomString(32)
+	db.session.commit()
+	return redirect(url_for("overview"))
+	
 @app.route("/api/tweetbot", methods=["GET", "POST"])
 def api_tweetbot():
 	if not request.form["source"].startswith("Tweetbot for"):
