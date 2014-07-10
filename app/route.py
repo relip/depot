@@ -28,7 +28,7 @@ from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.login import current_user
 from flask.ext.bcrypt import generate_password_hash, check_password_hash
-
+import sqlalchemy.ext
 from app import app
 from app import db
 
@@ -70,7 +70,7 @@ def _store_file(fp):
 			db.session.add(newPath)
 			db.session.commit()
 			break
-		except:
+		except sqlalchemy.ext.IntegrityError:
 			print traceback.format_exc()
 			pathLength += 0.2 # increase length every five attempts 
 			db.session.rollback()
