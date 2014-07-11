@@ -28,7 +28,7 @@ from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.login import current_user
 from flask.ext.bcrypt import generate_password_hash, check_password_hash
-import sqlalchemy.ext
+from sqlalchemy.exc import IntegrityError
 from app import app
 from app import db
 
@@ -64,13 +64,13 @@ def _store_file(fp):
 	while True:
 		try:
 			newPath = model.Path(generateRandomString(int(pathLength)), fileData.No, 
-				realFilename, int(time.time()), request.form.get("download_limit", 0), 
+				realFilename, int(time.time()), request.form.get("expires_in", None), request.form.get("download_limit", 0), 
 				True if request.form.get("hide_after_limit_exceeded", False) else False,
 				request.form.get("group", None))
 			db.session.add(newPath)
 			db.session.commit()
 			break
-		except sqlalchemy.ext.IntegrityError:
+		except IntegrityError:
 			print traceback.format_exc()
 			pathLength += 0.2 # increase length every five attempts 
 			db.session.rollback()
@@ -126,7 +126,6 @@ def index():
 	return render_template("index.html")
 
 @app.route("/upload", methods=["GET", "POST"])
-@login_required
 def upload():
 	if request.method == 'POST':
 		fp = request.files["file"]
@@ -268,7 +267,8 @@ def overview():
 @app.route("/<path>")
 @check_if_path_is_valid(model.Path)
 def file_information(path, fileData):
-	if fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0:
+	if (fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0) or \
+		(fileData.ExpiresIn and time.time() > fileData.Uploaded + fileData.ExpiresIn):
 		if fileData.HideAfterLimitExceeded:
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
@@ -279,7 +279,8 @@ def file_information(path, fileData):
 @app.route("/<path>/actual.<ext>")
 @check_if_path_is_valid(model.Path)
 def file_transmit(path, fileData):
-	if fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0:
+	if (fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0) or \
+		(fileData.ExpiresIn and time.time() > fileData.Uploaded + fileData.ExpiresIn):
 		if fileData.HideAfterLimitExceeded:
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
