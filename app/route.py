@@ -222,6 +222,9 @@ def group_modify(path, groupData):
 
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
+	if session["user_id"]:
+		return redirect(url_for("overview"))
+
 	if "id" not in request.form or "password" not in request.form or request.method != "POST":
 		return render_template("signin.html")
 
