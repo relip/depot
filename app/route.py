@@ -136,6 +136,7 @@ def upload():
 		return render_template("upload.html")
 
 @app.route("/api/regenerate_key")
+@login_required
 def api_regenerate_key():
 	uinfo = load_user(session["user_id"])
 	uinfo.APIKey = generateRandomString(32)
@@ -222,7 +223,7 @@ def group_modify(path, groupData):
 
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
-	if session["user_id"]:
+	if session.has_key("user_id"):
 		return redirect(url_for("overview"))
 
 	if "id" not in request.form or "password" not in request.form or request.method != "POST":
