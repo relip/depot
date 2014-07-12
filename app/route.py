@@ -167,21 +167,32 @@ def groups():
 @app.route("/groups/create", methods=["GET", "POST"])
 @login_required
 def create_group():
-	if request.mothod == "POST" and "paths" in request.form:
-		pathLength = 3 # default
-		while True:
+	if request.mothod == "POST":
+		if "group_path" in request.form:
+			groupPath = request.form["group_path"]
 			try:
-				groupPath = generateRandomString(int(pathLength))
-				db.session.add(model.Group(groupPath, 
+				db.session.add(model.Group(groupPath,
 					request.form.get("description", "")))
 				db.session.flush()
-				break
-			except:
+			except IntegrityError:
 				db.session.rollback()
-				pathLength += 0.2
+				return json.dumps({"result": False, "error": "Already exists"})
+
+		else:
+			pathLength = 3 # default
+			while True:
+				try:
+					groupPath = generateRandomString(int(pathLength))
+					db.session.add(model.Group(groupPath, 
+						request.form.get("description", "")))
+					db.session.flush()
+					break
+				except IntegrityError:
+					db.session.rollback()
+					pathLength += 0.2
 
 		result = {}
-		for p in request.form["paths"].split(","):
+		for p in request.form.get("paths", "").split(","):
 			p = p.strip()
 			fileData = model.Path.query.filter(model.Path.Path == p).first()
 
