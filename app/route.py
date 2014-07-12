@@ -60,11 +60,15 @@ def _store_file(fp):
 		db.session.add(fileData)
 		db.session.flush()
 
+	# FIXME: Set to None if the value is empty string which cause exception when checking for settings
+	optExpiresIn = request.form.get("expires_in", None) if request.form.get("expires_in", None) != "" else None
+	optDownloadLimit = request.form.get("download_limit", None) if request.form.get("download_limit", None) != "" else None
+
 	pathLength = 3 # default
 	while True:
 		try:
 			newPath = model.Path(generateRandomString(int(pathLength)), fileData.No, 
-				realFilename, int(time.time()), request.form.get("expires_in", None), request.form.get("download_limit", 0), 
+				realFilename, int(time.time()), optExpiresIn, optDownloadLimit, 
 				True if request.form.get("hide_after_limit_exceeded", False) else False,
 				request.form.get("group", None))
 			db.session.add(newPath)
@@ -267,8 +271,8 @@ def overview():
 @app.route("/<path>")
 @check_if_path_is_valid(model.Path)
 def file_information(path, fileData):
-	if (fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0) or \
-		(fileData.ExpiresIn and time.time() > fileData.Uploaded + fileData.ExpiresIn):
+	if (fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
+		(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn):
 		if fileData.HideAfterLimitExceeded:
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
@@ -279,8 +283,8 @@ def file_information(path, fileData):
 @app.route("/<path>/actual.<ext>")
 @check_if_path_is_valid(model.Path)
 def file_transmit(path, fileData):
-	if (fileData.Downloaded >= fileData.DownloadLimit and fileData.DownloadLimit != 0) or \
-		(fileData.ExpiresIn and time.time() > fileData.Uploaded + fileData.ExpiresIn):
+	if (fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
+		(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn):
 		if fileData.HideAfterLimitExceeded:
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")

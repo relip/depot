@@ -52,7 +52,7 @@ class Path(db.Model):
 	ActualName = db.Column(db.String(255))
 	Uploaded = db.Column(db.Integer, index=True)
 	ExpiresIn = db.Column(db.Integer, nullable=True)
-	DownloadLimit = db.Column(db.Integer)
+	DownloadLimit = db.Column(db.Integer, nullable=True)
 	Downloaded = db.Column(db.Integer, default=0)
 	GroupPath = db.Column(db.String(255), db.ForeignKey("Group.Path"), nullable=True, index=True)
 	FileNo = db.Column(db.Integer, db.ForeignKey("File.No"))
