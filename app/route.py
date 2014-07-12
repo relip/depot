@@ -258,7 +258,7 @@ def signup():
 		u = model.User(request.form["id"], generate_password_hash(request.form["password"]), generateRandomString(32))
 		db.session.add(u)
 		db.session.commit()
-		return redirect(url_for("overview"))
+		return redirect(url_for("signin"))
 	else:
 		return render_template("signup.html")
 
