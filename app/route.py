@@ -311,7 +311,7 @@ def signup():
 @login_required
 def overview():
 	uinfo = load_user(session["user_id"])
-	return render_template("overview.html", paths=model.Path.query.all(), userInfo=uinfo)
+	return render_template("overview.html", paths=model.Path.query.order_by(model.Path.Uploaded.desc()).all(), userInfo=uinfo)
 
 # Path related
 
