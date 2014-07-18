@@ -124,6 +124,8 @@ def load_user(uid):
 def unauthorized():
 	return abort(404)
 
+# Decorators
+
 def check_if_path_is_valid(mapper):
 	def decorator(func):
 		def wrapped_function(path, *args, **kwargs):
@@ -138,6 +140,20 @@ def check_if_path_is_valid(mapper):
 		return functools.update_wrapper(wrapped_function, func)
 	return decorator
 
+def check_if_file_is_valid():
+	def decorator(func):
+		def wrapped_function(name, *args, **kwargs):
+			fileQuery = model.File.query.filter(model.File.StoredPath == name)
+			fileData = fileQuery.first()
+
+			if not fileData:
+				return render_template("no_such_file.html")
+			else:
+				return func(name, fileData)
+		return functools.update_wrapper(wrapped_function, func)
+	return decorator
+
+# View functions
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -308,7 +324,7 @@ def path_information(path, fileData):
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
 
-	return render_template("file_information.html", data=fileData)
+	return render_template("path_information.html", data=fileData)
 
 @app.route("/<path>/actual")
 @app.route("/<path>/actual.<ext>")
@@ -350,7 +366,7 @@ def path_transmit(path, fileData):
 @check_if_path_is_valid(model.Path)
 def path_analyze(path, fileData):
 	fileHistory = model.History.query.filter(model.History.Path == path).all()
-	return render_template("file_analyze.html", path=fileData, history=fileHistory)
+	return render_template("path_analyze.html", path=fileData, history=fileHistory)
 
 @app.route("/<path>/modify")
 @login_required
@@ -379,4 +395,25 @@ def path_delete(path, fileData):
 		return redirect(url_for("overview"))
 	except:
 		return traceback.format_exc()
+
+# File related
+
+@app.route("/file/<name>")
+@login_required
+@check_if_file_is_valid()
+def file_information(name, fileData):
+	return render_template("file_information.html", data=fileData)
+
+@app.route("/file/<name>/actual")
+@login_required
+@check_if_file_is_valid()
+def file_transmit(name, fileData):
+	return abort(501)
+
+@app.route("/file/<name>/delete")
+@login_required
+@check_if_file_is_valid()
+def file_delete(name, fileData):
+	# TODO: If "include_path" exists in request.args, delete all paths related to this file
+	return abort(501)
 
