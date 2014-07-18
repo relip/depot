@@ -11,6 +11,7 @@ import time
 import mimetypes
 import urlparse
 import datetime
+import math
 
 from flask import render_template 
 from flask import send_from_directory
@@ -92,11 +93,28 @@ def hashfile(afile, hasher, blocksize=65536):
 def generateRandomString(n):
 	return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(n))
 
-def datetimeformat(value, format='%Y/%m/%d %H:%M:%S'):
+# Flask filters
+
+def _filter_convertTime(value, format='%Y/%m/%d %H:%M:%S'):
 	return datetime.datetime.fromtimestamp(value).strftime(format)
 
-app.jinja_env.filters['datetimeformat'] = datetimeformat
+def _filter_convertSize(size):
+	if size <= 0:
+		return "0B"
+	size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+	i = int(math.floor(math.log(size,1024)))
+	p = math.pow(1024,i)
+	s = round(size/p,2)
+	if s > 0:
+		return '%s%s' % (s,size_name[i])
+	else:
+		return "0B"
+
+app.jinja_env.filters['convertTime'] = _filter_convertTime
 app.jinja_env.filters['urljoin'] = urlparse.urljoin
+app.jinja_env.filters['convertSize'] = _filter_convertSize
+
+#############################################################
 
 @login_manager.user_loader
 def load_user(uid):
