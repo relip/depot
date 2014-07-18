@@ -297,9 +297,11 @@ def overview():
 	uinfo = load_user(session["user_id"])
 	return render_template("overview.html", paths=model.Path.query.all(), userInfo=uinfo)
 
+# Path related
+
 @app.route("/<path>")
 @check_if_path_is_valid(model.Path)
-def file_information(path, fileData):
+def path_information(path, fileData):
 	if (fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
 		(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn):
 		if fileData.HideAfterLimitExceeded:
@@ -311,7 +313,7 @@ def file_information(path, fileData):
 @app.route("/<path>/actual")
 @app.route("/<path>/actual.<ext>")
 @check_if_path_is_valid(model.Path)
-def file_transmit(path, fileData):
+def path_transmit(path, fileData):
 	if (fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
 		(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn):
 		if fileData.HideAfterLimitExceeded:
@@ -346,14 +348,14 @@ def file_transmit(path, fileData):
 @app.route("/<path>/analyze")
 @login_required
 @check_if_path_is_valid(model.Path)
-def file_analyze(path, fileData):
+def path_analyze(path, fileData):
 	fileHistory = model.History.query.filter(model.History.Path == path).all()
 	return render_template("file_analyze.html", path=fileData, history=fileHistory)
 
 @app.route("/<path>/modify")
 @login_required
 @check_if_path_is_valid(model.Path)
-def file_modify(path, fileData):
+def path_modify(path, fileData):
 	if "downloaded" in request.form:
 		fileData.Downloaded = request.form["downloaded"]
 	if "download_limit" in request.form:
@@ -370,12 +372,11 @@ def file_modify(path, fileData):
 @app.route("/<path>/delete")
 @login_required
 @check_if_path_is_valid(model.Path)
-def file_delete(path, fileData):
+def path_delete(path, fileData):
 	try:
 		model.File.query.filter(model.File.Path == path).delete()
 		db.session.commit()
 		return redirect(url_for("overview"))
 	except:
 		return traceback.format_exc()
-
 
