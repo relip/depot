@@ -260,7 +260,10 @@ def api_browse():
 	for fn in os.listdir(normalizedFullPath):
 		absp = os.path.join(normalizedFullPath, fn)
 		if os.path.isfile(absp):
-			buf["files"].append(fn)
+			buf["files"].append({
+				"name": fn,
+				"size": os.stat(absp).st_size,
+			})
 		else:
 			buf["directories"].append(fn)
 
