@@ -22,7 +22,6 @@ from flask import session
 from flask import url_for
 from flask import redirect
 from flask import send_file
-from werkzeug.utils import secure_filename
 from flask.ext.login import LoginManager
 from flask.ext.login import login_required
 from flask.ext.login import login_user
@@ -38,10 +37,28 @@ import model
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+# Common functions
+
+def _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
+	pathLength = 3 # default
+	while True:
+		try:
+			newPath = model.Path(generateRandomString(int(pathLength)), fileNo,
+				fileName, int(time.time()), optExpiresIn, optDownloadLimit,
+				optHideAfterLimitExceeded, optGroup)
+			db.session.add(newPath)
+			db.session.commit()
+			break
+		except IntegrityError:
+			print traceback.format_exc()
+			pathLength += 0.2 # increase length every five attempts 
+			db.session.rollback()
+
+	return newPath
+
 def _store_file(fp):
-	realFilename = secure_filename(fp.filename)
+	realFilename = fp.filename
 	md5sum = hashfile(fp, hashlib.md5())
-	fp.seek(0)
 	sha1sum = hashfile(fp, hashlib.sha1())
 	fp.seek(0)
 
@@ -64,26 +81,16 @@ def _store_file(fp):
 	# FIXME: Set to None if the value is empty string which cause exception when checking for settings
 	optExpiresIn = request.form.get("expires_in", None) if request.form.get("expires_in", None) != "" else None
 	optDownloadLimit = request.form.get("download_limit", None) if request.form.get("download_limit", None) != "" else None
+	optHideAfterLimitExceeded = True if request.form.get("hide_after_limit_exceeded", False) else False
 
-	pathLength = 3 # default
-	while True:
-		try:
-			newPath = model.Path(generateRandomString(int(pathLength)), fileData.No, 
-				realFilename, int(time.time()), optExpiresIn, optDownloadLimit, 
-				True if request.form.get("hide_after_limit_exceeded", False) else False,
-				request.form.get("group", None))
-			db.session.add(newPath)
-			db.session.commit()
-			break
-		except IntegrityError:
-			print traceback.format_exc()
-			pathLength += 0.2 # increase length every five attempts 
-			db.session.rollback()
+	newPath = _create_path(fileData.No, realFilename, optExpiresIn, optDownloadLimit,
+		optHideAfterLimitExceeded, request.form.get("group", None))
 
 	return json.dumps({"result": True, "path": newPath.Path})
 
 # http://stackoverflow.com/questions/3431825/generating-a-md5-checksum-of-a-file
 def hashfile(afile, hasher, blocksize=65536):
+	afile.seek(0)
 	buf = afile.read(blocksize)
 	while len(buf) > 0:
 		hasher.update(buf)
@@ -165,9 +172,47 @@ def index():
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
-	if request.method == 'POST':
-		fp = request.files["file"]
-		return _store_file(fp)
+	if request.method == 'POST' or request.form.get("test", None):
+		if request.form.get("local", False) and request.form.get("path", False):
+			if "\x00" in request.form["path"]:
+				return json.dumps({"result": False})
+
+			# Without UPLOAD_BASE_DIR
+			normalizedPath = os.path.abspath(request.form["path"]).lstrip("/")
+			normalizedFullPath = os.path.join(app.config["UPLOAD_BASE_DIR"], normalizedPath)
+
+			if not os.path.isfile(normalizedFullPath):
+				return json.dumps({"result": False, "message": "Given path is not a file"})
+			#elif os.path.islink(normalizedPath)
+			else:
+				with open(normalizedFullPath, "r") as fp:
+					md5sum = hashfile(fp, hashlib.md5())
+					sha1sum = hashfile(fp, hashlib.sha1())
+					fp.seek(0)
+
+				fileData = model.File.query.filter(model.File.MD5Sum == md5sum,
+					model.File.SHA1Sum == sha1sum).first()
+
+				if not fileData:
+					fileSize = os.stat(normalizedFullPath).st_size
+					fileData = model.File(normalizedPath, md5sum, sha1sum, fileSize)
+					db.session.add(fileData)
+					db.session.flush()
+
+				optExpiresIn = request.form.get("expires_in", None) if request.form.get("expires_in", None) != "" else None
+				optDownloadLimit = request.form.get("download_limit", None) if request.form.get("download_limit", None) != "" else None
+				optHideAfterLimitExceeded = True if request.form.get("hide_after_limit_exceeded", False) else False
+
+				# _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
+				newPath = _create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
+					optHideAfterLimitExceeded, request.form.get("group", None))
+
+			#	fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename), 
+			#		md5sum, sha1sum, fileSize)
+				return json.dumps({"result": True, "path": newPath.Path})
+		else:
+			fp = request.files["file"]
+			return _store_file(fp)
 
 	else:
 		return render_template("upload.html")
@@ -192,6 +237,35 @@ def api_tweetbot():
 		fileName, fileExtension = os.path.splitext(fp.filename)
 		result = json.loads(_store_file(request.files["media"]))
 		return json.dumps({"url": request.url_root + result["path"] + "/actual" + fileExtension})
+
+@app.route("/api/browse")
+@login_required
+def api_browse():
+	if not request.args.get("path", False):
+		return json.dumps({"result": False})
+	if "\x00" in request.args["path"]:
+		return json.dumps({"result": False})
+
+	normalizedPath = os.path.abspath(request.args["path"]).lstrip("/")
+	normalizedFullPath = os.path.join(app.config["UPLOAD_BASE_DIR"], normalizedPath)
+	
+	if not os.path.isdir(normalizedFullPath):
+		return json.dumps({"result": False, "message": "Given path is not a directory"})
+
+	buf = {
+		"files": [],
+		"directories": []
+	}
+
+	for fn in os.listdir(normalizedFullPath):
+		absp = os.path.join(normalizedFullPath, fn)
+		if os.path.isfile(absp):
+			buf["files"].append(fn)
+		else:
+			buf["directories"].append(fn)
+
+	return json.dumps({"result": True, "data": buf})
+		
 
 @app.route("/groups")
 @login_required
