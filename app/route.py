@@ -421,21 +421,21 @@ def path_transmit(path, fileData):
 
 	if app.config.get("HTTPD_USE_X_SENDFILE", False):
 		response = make_response()
-		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
+		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName.encode("utf-8"))
 		response.headers["Content-Type"] = mimetypes.guess_type(fileData.ActualName)[0]
 		httpdType = app.config.get("HTTPD_TYPE", "nginx")
 
 		if httpdType == "apache" or httpdType == "lighttpd":
-			response.headers["X-Sendfile"] = os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath)
+			response.headers["X-Sendfile"] = os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath.encode("utf-8"))
 		else: # nginx and others
-			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), fileData.File.StoredPath)
-			
+			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), fileData.File.StoredPath.encode("utf-8"))
+
 		return response
 	else:
 		print fileData.ActualName
 		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath),
 			mimetype=mimetypes.guess_type(fileData.ActualName)[0]))
-		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName)
+		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName.encode("utf-8"))
 		return response
 
 @app.route("/<path>/analyze")
