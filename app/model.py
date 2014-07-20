@@ -69,7 +69,7 @@ class Path(db.Model):
 		self.ExpiresIn = e
 		self.DownloadLimit = dl
 		self.HideAfterLimitExceeded = h
-		self.Group = g
+		self.GroupPath = g
 
 class Group(db.Model):
 	__tablename__ = "Group"

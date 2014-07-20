@@ -39,6 +39,9 @@ login_manager.init_app(app)
 
 # Common functions
 
+def _empty_string_to_none(s):
+	return s if s != "" else None
+
 def _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
 	pathLength = 3 # default
 	while True:
@@ -79,12 +82,13 @@ def _store_file(fp):
 		db.session.flush()
 
 	# FIXME: Set to None if the value is empty string which cause exception when checking for settings
-	optExpiresIn = request.form.get("expires_in", None) if request.form.get("expires_in", None) != "" else None
-	optDownloadLimit = request.form.get("download_limit", None) if request.form.get("download_limit", None) != "" else None
-	optHideAfterLimitExceeded = True if request.form.get("hide_after_limit_exceeded", False) else False
+	optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
+	optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
+	optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
+	optGroup = _empty_string_to_none(request.form.get("group"))
 
 	newPath = _create_path(fileData.No, realFilename, optExpiresIn, optDownloadLimit,
-		optHideAfterLimitExceeded, request.form.get("group", None))
+		optHideAfterLimitExceeded, optGroup)
 
 	return json.dumps({"result": True, "path": newPath.Path})
 
@@ -136,6 +140,7 @@ def unauthorized():
 def check_if_path_is_valid(mapper):
 	def decorator(func):
 		def wrapped_function(path, *args, **kwargs):
+			print path
 			fileQuery = mapper.query.filter(mapper.Path == path)
 			fileData = fileQuery.first()
 
@@ -199,13 +204,14 @@ def upload():
 					db.session.add(fileData)
 					db.session.flush()
 
-				optExpiresIn = request.form.get("expires_in", None) if request.form.get("expires_in", None) != "" else None
-				optDownloadLimit = request.form.get("download_limit", None) if request.form.get("download_limit", None) != "" else None
-				optHideAfterLimitExceeded = True if request.form.get("hide_after_limit_exceeded", False) else False
+				optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
+				optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
+				optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
+				optGroup = _empty_string_to_none(request.form.get("group", None))
 
 				# _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
 				newPath = _create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
-					optHideAfterLimitExceeded, request.form.get("group", None))
+					optHideAfterLimitExceeded, optGroup)
 
 			#	fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename), 
 			#		md5sum, sha1sum, fileSize)
@@ -278,7 +284,7 @@ def groups():
 @app.route("/groups/create", methods=["GET", "POST"])
 @login_required
 def create_group():
-	if request.mothod == "POST":
+	if request.method == "POST":
 		if "group_path" in request.form:
 			groupPath = request.form["group_path"]
 			try:
@@ -305,6 +311,8 @@ def create_group():
 		result = {}
 		for p in request.form.get("paths", "").split(","):
 			p = p.strip()
+			if not p:
+				continue
 			fileData = model.Path.query.filter(model.Path.Path == p).first()
 
 			if not fileData:
@@ -312,9 +320,11 @@ def create_group():
 
 			fileData.Group = groupPath
 
-			db.session.commit()
+			db.session.flush()
 
 			result.update({p: True})
+
+		db.session.commit()
 
 		return json.dumps({"path": groupPath, "result": result})
 
