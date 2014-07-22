@@ -140,7 +140,6 @@ def unauthorized():
 def check_if_path_is_valid(mapper):
 	def decorator(func):
 		def wrapped_function(path, *args, **kwargs):
-			print path
 			fileQuery = mapper.query.filter(mapper.Path == path)
 			fileData = fileQuery.first()
 
@@ -273,6 +272,9 @@ def api_browse():
 		else:
 			buf["directories"].append(fn)
 
+	buf["files"].sort()
+	buf["directories"].sort()
+
 	return json.dumps({"result": True, "data": buf})
 		
 
@@ -333,7 +335,7 @@ def create_group():
 @app.route("/group/<path>")
 @check_if_path_is_valid(model.Group)
 def group_information(path, groupData):
-	return render_template("group.html", groupData=groupData)
+	return render_template("group.html", groupData=groupData, time=int(time.time()))
 
 @app.route("/group/<path>/delete")
 @login_required
@@ -477,7 +479,11 @@ def path_modify(path, fileData):
 @check_if_path_is_valid(model.Path)
 def path_delete(path, fileData):
 	try:
-		model.File.query.filter(model.File.Path == path).delete()
+		if request.args.get("with_file", False):
+			model.File.query.filter(model.File.No == fileData.FileNo).delete()
+			model.Path.query.filter(model.Path.FileNo == fileData.FileNo).delete()
+		else:
+			model.Path.query.filter(model.Path.Path == path).delete()
 		db.session.commit()
 		return redirect(url_for("overview"))
 	except:
