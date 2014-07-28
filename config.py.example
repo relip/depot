@@ -26,7 +26,8 @@ ENABLE_SIGNUP = True
 
 ################################### API ####################################
 
-# This affects all API functions.
+# Option for API functions for third-party client.
+## Default value is True
 ENABLE_API = True
 
 # Option for remote browser.

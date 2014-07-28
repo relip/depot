@@ -12,6 +12,7 @@ import mimetypes
 import urlparse
 import datetime
 import math
+import zipfile
 
 from flask import render_template 
 from flask import send_from_directory
@@ -362,6 +363,33 @@ def group_modify(path, groupData):
 
 	return json.dumps({"result": True})
 
+@app.route("/group/<path>/zip")
+@check_if_path_is_valid(model.Group)
+def group_zip(path, groupData):
+	if not app.config.get("ENABLE_ZIP", False):
+		return abort(404)
+
+	for fileData in groupData.Paths:
+		if (fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
+			(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn):
+			db.session.rollback()
+			return render_template("limit_exceeded.html")
+		else:
+			fileData.Downloaded += 1
+			db.session.flush()
+
+	db.session.commit()
+
+	zPath = os.path.join("/tmp", generateRandomString(32))
+	zFp = zipfile.ZipFile(zPath, "w", zipfile.ZIP_DEFLATED)
+	for fileData in groupData.Paths:
+		zFp.write(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath), fileData.ActualName)
+	zFp.close()
+	response = make_response(send_file(zPath))
+	response.headers["Content-Disposition"] = "attachment; filename=\"%s.zip\""%(path)
+
+	return response
+	
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
 	if session.has_key("user_id"):
