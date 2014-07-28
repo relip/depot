@@ -232,6 +232,8 @@ def api_regenerate_key():
 	
 @app.route("/api/tweetbot", methods=["GET", "POST"])
 def api_tweetbot():
+	if not app.config.get("ENABLE_API", False):
+		return abort(404)
 	if not request.form["source"].startswith("Tweetbot for"):
 		return abort(404)
 	elif not model.User.query.filter(model.User.APIKey == request.args["api_key"]).first():
@@ -246,6 +248,8 @@ def api_tweetbot():
 @app.route("/api/browse")
 @login_required
 def api_browse():
+	if not app.config.get("ENABLE_REMOTE_BROWSER", False):
+		return json.dumps({"result": False})
 	if not request.args.get("path", False):
 		return json.dumps({"result": False})
 	if "\x00" in request.args["path"]:
@@ -384,7 +388,7 @@ def signout():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-	if not app.config["ENABLE_SIGNUP"]:
+	if not app.config.get("ENABLE_SIGNUP", False):
 		return abort(404)
 
 	elif (request.method == "POST" and

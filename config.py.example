@@ -13,6 +13,9 @@ SECRET_KEY = os.urandom(30)
 ############################################################################
 ENABLE_SIGNUP = True
 
+ENABLE_REMOTE_BROWSER = False
+ENABLE_API = True
+
 # RECOMMENDED: Set to True if you usually deal with large files.
 # XSendFile allows application to serve files more efficiently by
 # sending only path to httpd, then httpd reads directly from the given path and
