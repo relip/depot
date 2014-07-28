@@ -3,6 +3,16 @@ import os
 SERVER_HOST = "0.0.0.0"
 SERVER_POST = 8000
 
+# Define the application directory
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+SQLALCHEMY_DATABASE_URI = ""
+# SQLALCHEMY_ECHO = True
+
+UPLOAD_BASE_DIR = "/storage/"
+# This must be located under UPLOAD_BASE_DIR and must not starts with slash.
+UPLOAD_DIRECTORY = "depot"
+
 # Statement for enabling the development environment
 DEBUG = True
 
@@ -11,10 +21,33 @@ SECRET_KEY = os.urandom(30)
 ############################################################################
 ##### ENSURE THIS VARIABLE IS SET TO FALSE AFTER CREATING NEEDED USERS #####
 ############################################################################
+
 ENABLE_SIGNUP = True
 
-ENABLE_REMOTE_BROWSER = False
+################################### API ####################################
+
+# This affects all API functions.
 ENABLE_API = True
+
+# Option for remote browser.
+# Set to False if you don't want uploader to browse your local directories.
+# Browser API only returns directories and files in UPLOAD_BASE_DIR.
+### Default value is False
+ENABLE_REMOTE_BROWSER = False
+
+# Option for group zipping.
+# Compression might slow down your server; set ENABLE_ZIP to False to disable
+# zipping feature or set ZIP_METHOD to zipfile.ZIP_STORED to just 
+# gather - not compressing - files into one zip file.
+### Default values are: 
+##### ENABLE_ZIP = False
+##### ZIP_METHOD = zipfile.ZIP_DEFLATED
+import zipfile
+ENABLE_ZIP = False
+# ZIP_STORED or ZIP_DEFLATED
+ZIP_METHOD = zipfile.ZIP_DEFLATED
+
+############################# Transport Method #############################
 
 # RECOMMENDED: Set to True if you usually deal with large files.
 # XSendFile allows application to serve files more efficiently by
@@ -26,17 +59,9 @@ HTTPD_TYPE = "nginx"
 # Set base directory if you use nginx for proxy.
 HTTPD_BASE_DIR = "/"
 
-# Define the application directory
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))  
-
-SQLALCHEMY_DATABASE_URI = ""
-# SQLALCHEMY_ECHO = True
-
-UPLOAD_BASE_DIR = "/storage/"
-# This must be located under UPLOAD_BASE_DIR and must not starts with slash. 
-UPLOAD_DIRECTORY = "depot"
-
-# ----- DO NOT TOUCH BELOW THIS LINE -----
+############################################################################
+###################### DO NOT TOUCH BELOW THIS LINE ########################
+############################################################################
 
 UPLOAD_FULL_DIRECTORY = os.path.join(UPLOAD_BASE_DIR, UPLOAD_DIRECTORY)
 
