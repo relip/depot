@@ -47,7 +47,7 @@ def _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, opt
 	pathLength = 3 # default
 	while True:
 		try:
-			newPath = model.Path(generateRandomString(int(pathLength)), fileNo,
+			newPath = model.Path(_generate_random_string(int(pathLength)), fileNo,
 				fileName, int(time.time()), optExpiresIn, optDownloadLimit,
 				optHideAfterLimitExceeded, optGroup)
 			db.session.add(newPath)
@@ -62,8 +62,8 @@ def _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, opt
 
 def _store_file(fp):
 	realFilename = fp.filename
-	md5sum = hashfile(fp, hashlib.md5())
-	sha1sum = hashfile(fp, hashlib.sha1())
+	md5sum = _hash_file(fp, hashlib.md5())
+	sha1sum = _hash_file(fp, hashlib.sha1())
 	fp.seek(0)
 
 	fileData = model.File.query.filter(model.File.MD5Sum == md5sum, 
@@ -71,7 +71,7 @@ def _store_file(fp):
 
 	if not fileData:
 		while True:
-			newFilename = generateRandomString(32)
+			newFilename = _generate_random_string(32)
 			if not os.path.exists(os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)):
 				break
 		fullPath = os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)
@@ -94,7 +94,7 @@ def _store_file(fp):
 	return json.dumps({"result": True, "path": newPath.Path})
 
 # http://stackoverflow.com/questions/3431825/generating-a-md5-checksum-of-a-file
-def hashfile(afile, hasher, blocksize=65536):
+def _hash_file(afile, hasher, blocksize=65536):
 	afile.seek(0)
 	buf = afile.read(blocksize)
 	while len(buf) > 0:
@@ -102,7 +102,7 @@ def hashfile(afile, hasher, blocksize=65536):
 		buf = afile.read(blocksize)
 	return hasher.hexdigest()
 
-def generateRandomString(n):
+def _generate_random_string(n):
 	return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(n))
 
 # Flask filters
@@ -191,8 +191,8 @@ def upload():
 			#elif os.path.islink(normalizedPath)
 			else:
 				with open(normalizedFullPath, "r") as fp:
-					md5sum = hashfile(fp, hashlib.md5())
-					sha1sum = hashfile(fp, hashlib.sha1())
+					md5sum = _hash_file(fp, hashlib.md5())
+					sha1sum = _hash_file(fp, hashlib.sha1())
 					fp.seek(0)
 
 				fileData = model.File.query.filter(model.File.MD5Sum == md5sum,
@@ -227,7 +227,7 @@ def upload():
 @login_required
 def api_regenerate_key():
 	uinfo = load_user(session["user_id"])
-	uinfo.APIKey = generateRandomString(32)
+	uinfo.APIKey = _generate_random_string(32)
 	db.session.commit()
 	return redirect(url_for("overview"))
 	
@@ -306,7 +306,7 @@ def create_group():
 			pathLength = 3 # default
 			while True:
 				try:
-					groupPath = generateRandomString(int(pathLength))
+					groupPath = _generate_random_string(int(pathLength))
 					db.session.add(model.Group(groupPath, 
 						request.form.get("description", "")))
 					db.session.flush()
@@ -366,7 +366,7 @@ def group_modify(path, groupData):
 @app.route("/group/<path>/zip")
 @check_if_path_is_valid(model.Group)
 def group_zip(path, groupData):
-	if not app.config.get("ENABLE_ZIP", False):
+	if not app.config.get("ENABLE_API", True) and not app.config.get("ENABLE_ZIP", False):
 		return abort(404)
 
 	for fileData in groupData.Paths:
@@ -380,7 +380,7 @@ def group_zip(path, groupData):
 
 	db.session.commit()
 
-	zPath = os.path.join("/tmp", generateRandomString(32))
+	zPath = os.path.join("/tmp", _generate_random_string(32))
 	zFp = zipfile.ZipFile(zPath, "w", app.config.get("ZIP_METHOD", zipfile.ZIP_DEFLATED))
 	for fileData in groupData.Paths:
 		zFp.write(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath), fileData.ActualName)
@@ -421,7 +421,7 @@ def signup():
 
 	elif (request.method == "POST" and
 		request.form["id"] and request.form["password"]):
-		u = model.User(request.form["id"], generate_password_hash(request.form["password"]), generateRandomString(32))
+		u = model.User(request.form["id"], generate_password_hash(request.form["password"]), _generate_random_string(32))
 		db.session.add(u)
 		db.session.commit()
 		return redirect(url_for("signin"))
