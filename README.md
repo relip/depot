@@ -1,4 +1,4 @@
-depot
+Depot
 =====
 
 Depot is a simple Flask-based file sharing platform for individual use.
@@ -26,7 +26,7 @@ Using Flask built-in web server:
 ./depot
 ```
 
-Using uWSGI(Recommanded):
+Using uWSGI(Recommended):
 ```
 uwsgi -s /tmp/depot.sock --module app --callable app --chmod-socket=777
 ```
