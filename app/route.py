@@ -381,7 +381,7 @@ def group_zip(path, groupData):
 	db.session.commit()
 
 	zPath = os.path.join("/tmp", generateRandomString(32))
-	zFp = zipfile.ZipFile(zPath, "w", zipfile.ZIP_DEFLATED)
+	zFp = zipfile.ZipFile(zPath, "w", app.config.get("ZIP_METHOD", zipfile.ZIP_DEFLATED))
 	for fileData in groupData.Paths:
 		zFp.write(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath), fileData.ActualName)
 	zFp.close()
