@@ -80,7 +80,7 @@ def _store_file(fp):
 		fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename), 
 			md5sum, sha1sum, fileSize)
 		db.session.add(fileData)
-		db.session.flush()
+		db.session.commit()
 
 	# FIXME: Set to None if the value is empty string which cause exception when checking for settings
 	optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
@@ -202,7 +202,7 @@ def upload():
 					fileSize = os.stat(normalizedFullPath).st_size
 					fileData = model.File(normalizedPath, md5sum, sha1sum, fileSize)
 					db.session.add(fileData)
-					db.session.flush()
+					db.session.commit()
 
 				optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
 				optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
@@ -297,7 +297,7 @@ def create_group():
 			try:
 				db.session.add(model.Group(groupPath,
 					request.form.get("description", "")))
-				db.session.flush()
+				db.session.commit()
 			except IntegrityError:
 				db.session.rollback()
 				return json.dumps({"result": False, "error": "Already exists"})
@@ -309,7 +309,7 @@ def create_group():
 					groupPath = _generate_random_string(int(pathLength))
 					db.session.add(model.Group(groupPath, 
 						request.form.get("description", "")))
-					db.session.flush()
+					db.session.commit()
 					break
 				except IntegrityError:
 					db.session.rollback()
@@ -327,7 +327,7 @@ def create_group():
 
 			fileData.Group = groupPath
 
-			db.session.flush()
+			db.session.commit()
 
 			result.update({p: True})
 
@@ -376,7 +376,7 @@ def group_zip(path, groupData):
 			return render_template("limit_exceeded.html")
 		else:
 			fileData.Downloaded += 1
-			db.session.flush()
+			db.session.commit()
 
 	db.session.commit()
 
