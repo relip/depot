@@ -154,14 +154,14 @@ def check_if_path_is_valid(mapper):
 
 def check_if_file_is_valid():
 	def decorator(func):
-		def wrapped_function(name, *args, **kwargs):
-			fileQuery = model.File.query.filter(model.File.StoredPath == name)
+		def wrapped_function(no, *args, **kwargs):
+			fileQuery = model.File.query.filter(model.File.No == no)
 			fileData = fileQuery.first()
 
 			if not fileData:
 				return render_template("no_such_file.html")
 			else:
-				return func(name, fileData)
+				return func(no, fileData)
 		return functools.update_wrapper(wrapped_function, func)
 	return decorator
 
@@ -524,22 +524,22 @@ def path_delete(path, fileData):
 
 # File related
 
-@app.route("/file/<name>")
+@app.route("/file/<no>")
 @login_required
 @check_if_file_is_valid()
-def file_information(name, fileData):
+def file_information(no, fileData):
 	return render_template("file_information.html", data=fileData)
 
-@app.route("/file/<name>/actual")
+@app.route("/file/<no>/actual")
 @login_required
 @check_if_file_is_valid()
-def file_transmit(name, fileData):
+def file_transmit(no, fileData):
 	return abort(501)
 
-@app.route("/file/<name>/delete")
+@app.route("/file/<no>/delete")
 @login_required
 @check_if_file_is_valid()
-def file_delete(name, fileData):
+def file_delete(no, fileData):
 	# TODO: If "include_path" exists in request.args, delete all paths related to this file
 	return abort(501)
 
