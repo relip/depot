@@ -176,6 +176,7 @@ def index():
 	return render_template("index.html")
 
 @app.route("/upload", methods=["GET", "POST"])
+@login_required
 def upload():
 	if request.method == 'POST' or request.form.get("test", None):
 		if request.form.get("local", False) and request.form.get("path", False):
