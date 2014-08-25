@@ -513,8 +513,8 @@ def path_modify(path, fileData):
 def path_delete(path, fileData):
 	try:
 		if request.args.get("with_file", False):
-			model.File.query.filter(model.File.No == fileData.FileNo).delete()
 			model.Path.query.filter(model.Path.FileNo == fileData.FileNo).delete()
+			model.File.query.filter(model.File.No == fileData.FileNo).delete()
 		else:
 			model.Path.query.filter(model.Path.Path == path).delete()
 		db.session.commit()
