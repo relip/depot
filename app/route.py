@@ -102,6 +102,25 @@ def _hash_file(afile, hasher, blocksize=65536):
 		buf = afile.read(blocksize)
 	return hasher.hexdigest()
 
+def _transmit_file(fileName, storedPath):
+	if app.config.get("HTTPD_USE_X_SENDFILE", False):
+		response = make_response()
+		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileName.encode("utf-8"))
+		response.headers["Content-Type"] = mimetypes.guess_type(fileName)[0]
+		httpdType = app.config.get("HTTPD_TYPE", "nginx")
+
+		if httpdType == "apache" or httpdType == "lighttpd":
+			response.headers["X-Sendfile"] = os.path.join(app.config["UPLOAD_BASE_DIR"], storedPath.encode("utf-8"))
+		else: # nginx and others
+			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), storedPath.encode("utf-8"))
+
+		return response
+	else:
+		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], storedPath),
+			mimetype=mimetypes.guess_type(fileName)[0]))
+		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileName.encode("utf-8"))
+		return response
+
 def _generate_random_string(n):
 	return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(n))
 
@@ -464,24 +483,7 @@ def path_transmit(path, fileData):
 
 	db.session.commit()
 
-	if app.config.get("HTTPD_USE_X_SENDFILE", False):
-		response = make_response()
-		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName.encode("utf-8"))
-		response.headers["Content-Type"] = mimetypes.guess_type(fileData.ActualName)[0]
-		httpdType = app.config.get("HTTPD_TYPE", "nginx")
-
-		if httpdType == "apache" or httpdType == "lighttpd":
-			response.headers["X-Sendfile"] = os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath.encode("utf-8"))
-		else: # nginx and others
-			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), fileData.File.StoredPath.encode("utf-8"))
-
-		return response
-	else:
-		print fileData.ActualName
-		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath),
-			mimetype=mimetypes.guess_type(fileData.ActualName)[0]))
-		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileData.ActualName.encode("utf-8"))
-		return response
+	return _transmit_file(fileData.ActualName, fileData.File.StoredPath)
 
 @app.route("/<path>/analyze")
 @login_required
@@ -534,7 +536,7 @@ def file_information(no, fileData):
 @login_required
 @check_if_file_is_valid()
 def file_transmit(no, fileData):
-	return abort(501)
+	return _transmit_file("File_%s"%(no), fileData.StoredPath)
 
 @app.route("/file/<no>/delete")
 @login_required
