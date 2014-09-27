@@ -137,7 +137,7 @@ def _filter_convertSize(size):
 	size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
 	i = int(math.floor(math.log(size,1024)))
 	p = math.pow(1024,i)
-	s = round(size/p,2)
+	s = round(int(size)/p,2)
 	if s > 0:
 		return '%s%s' % (s,size_name[i])
 	else:
