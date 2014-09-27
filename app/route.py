@@ -485,6 +485,7 @@ def path_information(path, fileData):
 
 	return render_template("path_information.html", data=fileData)
 
+@app.route("/<path>.<ext>")
 @app.route("/<path>/actual")
 @app.route("/<path>/actual.<ext>")
 @check_if_path_is_valid(model.Path)
