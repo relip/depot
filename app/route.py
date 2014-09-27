@@ -29,6 +29,8 @@ from flask.ext.login import login_user
 from flask.ext.login import logout_user
 from flask.ext.login import current_user
 from flask.ext.bcrypt import generate_password_hash, check_password_hash
+
+import sqlalchemy
 from sqlalchemy.exc import IntegrityError
 from app import app
 from app import db
@@ -452,7 +454,22 @@ def signup():
 @login_required
 def overview():
 	uinfo = load_user(session["user_id"])
-	return render_template("overview.html", paths=model.Path.query.order_by(model.Path.Uploaded.desc()).all(), userInfo=uinfo)
+	paths = model.Path.query.order_by(model.Path.Uploaded.desc())
+
+	try:
+		page = int(request.args.get("page", 0))
+		page = 0 if page <= 0 else page-1
+		offset = page*50
+	except:
+		offset = 0
+
+	pathList = paths.limit(50).offset(offset)
+	pathCount = paths.count()
+	pathSizeSum = db.session.query(sqlalchemy.func.sum(model.File.Size).label("sum")).join(model.Path.File).all()
+	fileSizeSum = db.session.query(sqlalchemy.func.sum(model.File.Size).label("sum")).all()
+
+	return render_template("overview.html", paths=pathList.all(), pathCount=pathCount,
+		pathSizeSum=pathSizeSum, fileSizeSum=fileSizeSum, userInfo=uinfo)
 
 # Path related
 
