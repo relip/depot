@@ -27,5 +27,3 @@ pip-log.txt
 .mr.developer.cfg
 config.py
 *.db
-app/static
-app/templates

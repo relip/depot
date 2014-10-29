@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<script>
+$(function()
+{
+	$(".api-regenerate-button").click(function()
+	{
+		if(confirm("Are you sure?"))
+		{
+			location.href = "{{ url_for("api_regenerate_key") }}";
+		}
+	});
+});
+</script>
+<style>
+.details {
+	font-size: 1.5em;
+}
+</style>
+<div class="details">
+API Key: {{ request.url_root | urljoin(url_for("api_tweetbot")+"?api_key="+userInfo.APIKey) }}  <div class="depot-box api-regenerate-button" style="display: inline; cursor: default;">Regenerate Key</div>
+<br />
+Paths: {{ pathCount }} / Total path size: {{pathSizeSum[0][0] | convertSize }} / Total file size: {{fileSizeSum[0][0] | convertSize }}
+</div>
+<table class="table table-striped">
+	<thead>
+		<tr><th>Path</th><th>File path</th><th>File name</th><th>Uploaded</th><th>Size</th><th></th><th></tr>
+	</thead>
+	<tbody>
+	{% for path in paths %}
+		<tr><td><a href="/{{path.Path}}">{{ path.Path }}</a></td><td><a href="{{ url_for("file_information", no=path.FileNo) }}">File #{{ path.File.No }}</td><td>{{ path.ActualName }}</td><td>{{ path.Uploaded | convertTime }}</td><td>{{ path.File.Size | convertSize }}</td><td><a href="/{{path.Path}}/actual">ACTUAL</a></td><td><a href="/{{path.Path}}/analyze">ANALYZE</a></td>
+	{% endfor %} 
+	</tbody>
+</table>
+<center>
+{% for page in range(1, pathCount/50 | round(0, 'ceil')+2) %}
+<span style="margin: 10px"><a href="{{url_for("overview")}}?page={{page}}">{{page}}</a></span>
+{% endfor %}
+</center>
+{% endblock %}

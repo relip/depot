@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+a:hover { 
+	text-decoration: none;
+}
+</style>
+<div style="background-color: #FFF; padding: 10px;">
+	<h1>{{ data.ActualName }}</h1>
+	<div style="float: right; width: 350px">
+		Downloaded<br />
+		<span style="float: right;">{{ data.Downloaded }} of {{ data.DownloadLimit if data.DownloadLimit else "unlimited" }}</span>
+		<div style="clear: both;"></div>
+		Uploaded<br />
+		<span style="float: right;">{{ data.Uploaded | convertTime }}</span>
+		<div style="clear: both;"></div>
+		Expires In<br />
+		<span style="float: right;">{{ data.ExpiresIn if data.ExpiresIn else "Forever" }}</span>
+		<div style="clear: both;"></div>
+		MD5<br />
+		<span style="float: right;">{{ data.File.MD5Sum }}</span>
+		<div style="clear: both;"></div>
+		SHA1<br />
+		<span style="float: right;">{{ data.File.SHA1Sum }}</span>
+		<div style="clear: both;"></div>
+		File size<br />
+		<span style="float: right;">{{ data.File.Size | convertSize }}</span>
+		<div style="clear: both;"></div>
+		<br />
+	</div>
+	<div style="clear: both;"></div>
+	<!--<div style="background-color: #00004A; text-align: center; font-size: 2em;">
+	</div> -->
+	<h2><a style="display:inline-block; width: 100%;" class="depot-box" href="{{ url_for("path_transmit", path=request.path) }}">DOWNLOAD</a></h2>
+	{% if session["user_id"] %}
+	<div class="row">
+		<div class="col-sm-6 col-xs-12">
+			<h2><a style="display: inline-block; width: 100%;background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}">DELETE</a></h2>
+		</div>
+		<div class="col-sm-6 col-xs-12">
+			<h2><a style="display:inline-block; width: 100%; background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}?with_file=1">DELETE ALL RELATED TO THIS</a></h2>
+		</div>
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

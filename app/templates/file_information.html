@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+a:hover { 
+	text-decoration: none;
+}
+</style>
+<div style="background-color: #FFF; padding: 10px;">
+	<h1>File #{{ data.No }} <small>{{ data.StoredPath }}</small></h1>
+	<h2><a style="display:inline-block; width: 100%;" class="depot-box" href="{{ url_for("file_transmit", no=data.No) }}">DOWNLOAD</a></h2>
+	<h2>Related Paths</h2>
+	<table class="table table-striped">
+		<thead>
+			<tr><th>Path</th><th>Actual name</th><th>Uploaded</th><th>Download</th><th>Analyze</th></tr>
+		</thead>
+		<tbody>
+		{% for path in data.Paths %}
+			<tr><td><a href="/{{path.Path}}">{{ path.Path }}</a></td><td>{{ path.ActualName }}</td><td>{{ path.Uploaded | convertTime }}</td><td><a href="/{{path.Path}}/actual">ACTUAL</a></td><td><a href="/{{path.Path}}/analyze">ANALYZE</a></td>
+		{% endfor %}
+		</tbody>
+	</table>	
+	<div class="row">
+		<div class="col-sm-12 col-xs-12">
+			<h2><a style="display: inline-block; width: 100%;background-color: red;" class="depot-box" href="{{ url_for("file_delete", no=data.No) }}">DELETE ALL</a></h2>
+		</div>
+	</div>
+</div>
+{% endblock %}
