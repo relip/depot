@@ -266,7 +266,7 @@ def api_tweetbot():
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
 		result = json.loads(_store_file(request.files["media"]))
-		return json.dumps({"url": request.url_root + result["path"] + "/actual" + fileExtension})
+		return json.dumps({"url": request.url_root + result["path"] + fileExtension})
 
 @app.route("/api/browse")
 @login_required
