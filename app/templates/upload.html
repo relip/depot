@@ -3,6 +3,7 @@
 	<style>
 	.progress {
 		margin-bottom: 0px;
+		margin-top: 10px;
 	}
 	.form-inline .input-group .input-group-addon {
 	#	width: auto;
@@ -69,12 +70,6 @@
 			</div>
 		</div><!-- /input-group -->
 	</form>
-	<div class="panel panel-success" style="margin-top: 10px;">
-		<div class="panel-heading">Stack</div>
-		
-		<ul id="uploadList" class="list-group">
-		</ul>
-	</div>
 	<button type="button" class="depot-box" id="open-browser" style="width: 100%;">Open remote file browser</button>
 	<div id="browser">
 		Current directory: <span id="browser-currdir"></span>
@@ -85,5 +80,11 @@
 			<tbody id="browser-tbody">
 			</tbody>
 		</table>
+	</div>
+	<div class="panel panel-success" style="margin-top: 10px;">
+		<div class="panel-heading">Stack</div>
+		
+		<ul id="uploadList" class="list-group">
+		</ul>
 	</div>
 {% endblock %}
