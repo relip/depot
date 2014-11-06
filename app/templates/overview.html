@@ -33,7 +33,7 @@ Paths: {{ pathCount }} / Total path size: {{pathSizeSum[0][0] | convertSize }} /
 	</tbody>
 </table>
 <center>
-{% for page in range(1, pathCount/50 | round(0, 'ceil')+2) %}
+{% for page in range(1, ((pathCount/50) | round(0, 'ceil') | int)+2) %}
 <span style="margin: 10px"><a href="{{url_for("overview")}}?page={{page}}">{{page}}</a></span>
 {% endfor %}
 </center>
