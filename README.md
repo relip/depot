@@ -15,6 +15,7 @@ See `dev` branch for WiP HTML templates.
 - Grouping files
 - Compressing files from specific group 
 - API capabilities
+- GeoIP support
 
 ## Requirements
 
