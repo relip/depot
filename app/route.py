@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import os
 import functools
@@ -14,7 +14,7 @@ import datetime
 import math
 import zipfile
 
-from flask import render_template 
+from flask import render_template
 from flask import send_from_directory
 from flask import make_response
 from flask import request
@@ -57,7 +57,7 @@ def _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, opt
 			break
 		except IntegrityError:
 			print traceback.format_exc()
-			pathLength += 0.2 # increase length every five attempts 
+			pathLength += 0.2 # increase length every five attempts
 			db.session.rollback()
 
 	return newPath
@@ -68,7 +68,7 @@ def _store_file(fp):
 	sha1sum = _hash_file(fp, hashlib.sha1())
 	fp.seek(0)
 
-	fileData = model.File.query.filter(model.File.MD5Sum == md5sum, 
+	fileData = model.File.query.filter(model.File.MD5Sum == md5sum,
 		model.File.SHA1Sum == sha1sum).first()
 
 	if not fileData:
@@ -79,7 +79,7 @@ def _store_file(fp):
 		fullPath = os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)
 		fp.save(fullPath)
 		fileSize = os.stat(fullPath).st_size
-		fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename), 
+		fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename),
 			md5sum, sha1sum, fileSize)
 		db.session.add(fileData)
 		db.session.commit()
@@ -235,7 +235,7 @@ def upload():
 				newPath = _create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
 					optHideAfterLimitExceeded, optGroup)
 
-			#	fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename), 
+			#	fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename),
 			#		md5sum, sha1sum, fileSize)
 				return json.dumps({"result": True, "path": newPath.Path})
 		else:
@@ -252,7 +252,7 @@ def api_regenerate_key():
 	uinfo.APIKey = _generate_random_string(32)
 	db.session.commit()
 	return redirect(url_for("overview"))
-	
+
 @app.route("/api/tweetbot", methods=["GET", "POST"])
 def api_tweetbot():
 	if not app.config.get("ENABLE_API", False):
@@ -268,6 +268,19 @@ def api_tweetbot():
 		result = json.loads(_store_file(request.files["media"]))
 		return json.dumps({"url": request.url_root + result["path"] + fileExtension})
 
+@app.route("/api/twitpic", methods=["GET", "POST"])
+def api_twitpic():
+	if not app.config.get("ENABLE_API", False):
+		return abort(404)
+	elif not model.User.query.filter(model.User.APIKey == request.args["api_key"]).first():
+		return abort(403)
+	else:
+		print request.files
+		fp = request.files["media"]
+		fileName, fileExtension = os.path.splitext(fp.filename)
+		result = json.loads(_store_file(request.files["media"]))
+		return "<rsp status=\"ok\"><mediaurl>%s</mediaurl></rsp>" % (request.url_root + result["path"] + fileExtension)
+
 @app.route("/api/browse")
 @login_required
 def api_browse():
@@ -280,7 +293,7 @@ def api_browse():
 
 	normalizedPath = os.path.abspath(request.args["path"]).lstrip("/")
 	normalizedFullPath = os.path.join(app.config["UPLOAD_BASE_DIR"], normalizedPath)
-	
+
 	if not os.path.isdir(normalizedFullPath):
 		return json.dumps({"result": False, "message": "Given path is not a directory"})
 
@@ -303,7 +316,7 @@ def api_browse():
 	buf["directories"].sort()
 
 	return json.dumps({"result": True, "data": buf})
-		
+
 
 @app.route("/groups")
 @login_required
@@ -329,7 +342,7 @@ def create_group():
 			while True:
 				try:
 					groupPath = _generate_random_string(int(pathLength))
-					db.session.add(model.Group(groupPath, 
+					db.session.add(model.Group(groupPath,
 						request.form.get("description", "")))
 					db.session.commit()
 					break
@@ -411,7 +424,7 @@ def group_zip(path, groupData):
 	response.headers["Content-Disposition"] = "attachment; filename=\"%s.zip\""%(path)
 
 	return response
-	
+
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
 	if session.has_key("user_id"):
@@ -498,7 +511,7 @@ def path_transmit(path, fileData):
 		return render_template("limit_exceeded.html")
 
 	fileData.Downloaded = model.Path.Downloaded + 1
-	db.session.add(model.History(path, request.remote_addr, int(time.time()), 
+	db.session.add(model.History(path, request.remote_addr, int(time.time()),
 		request.user_agent.string, request.referrer, "-"))
 
 	db.session.commit()
