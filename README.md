@@ -5,6 +5,8 @@ Depot is a simple Flask-based file sharing platform for individual use.
 
 **HTML templates are still work in progress**
 
+See `dev` branch for WiP HTML templates.
+
 ## Features
 
 - Expiration date
@@ -12,7 +14,8 @@ Depot is a simple Flask-based file sharing platform for individual use.
 - Deleting or hiding after expired
 - Grouping files
 - Compressing files from specific group 
-- API support such as Tweetbot
+- API capabilities
+- GeoIP support
 
 ## Requirements
 
@@ -30,6 +33,30 @@ Flask-Bcrypt
 3. Read and modify config.py
 4. `./depot` or use uWSGI
 
+## Nginx configuration 
+
+In nginx.conf, put following code under `http` section.
+```
+server {
+	 listen 80;
+	server_name [domain];
+
+	location / { try_files $uri @depot; }
+	location @depot {
+		include uwsgi_params;
+		uwsgi_pass unix:/tmp/depot.sock;
+	}
+}
+```
+**RECOMMENDED**: If you are using XSendfile for file transfer, put following code under `server` section above. 
+
+The importance of XSendfile is explained in `Notes` section.
+```
+	location /[HTTPD_BASE_DIR in config.py]/ {
+		internal;
+		alias /[UPLOAD_BASE_DIR in config.py]/;
+	}
+```
 ## Usage
 
 Using Flask built-in web server:
@@ -37,7 +64,7 @@ Using Flask built-in web server:
 ./depot
 ```
 
-Using [uWSGI](https://uwsgi-docs.readthedocs.org/en/latest/)(Highly recommended):
+Using [uWSGI](https://uwsgi-docs.readthedocs.org/en/latest/)(**highly recommended**):
 ```
 uwsgi -s /tmp/depot.sock --module app --callable app --chmod-socket=777
 ```
