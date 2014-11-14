@@ -1,5 +1,20 @@
-<form method="POST">
-	<input type="text" name="id" />
-	<input type="password" name="password" />
-	<input type="submit" />
-</form>
+{% extends "base.html" %}
+{% block content %}
+<style>
+.input-group { width: 100%; }
+</style>
+<div style="width: 300px; height 200px; position:absolute; top:50%; left:50%; margin-top: -100px; margin-left: -150px;">
+	<form method="POST" action="{{url_for("signup")}}">
+		<div style="width: 100%">
+			<h1 style="text-align: center">Sign up</h1>
+			<div class="input-group">
+				<input type="text" name="id" class="form-control" placeholder="ID" />
+			</div>
+			<div class="input-group">
+				<input type="password" name="password" class="form-control" placeholder="Password" />
+			</div>
+			<input type="submit" value="Sign up" style="width: 100%" />
+		</div>
+	</form>
+</div>
+{% endblock %}
