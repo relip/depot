@@ -5,7 +5,10 @@ Depot is a simple Flask-based file sharing platform for individual use.
 
 **HTML templates are still work in progress**
 
+**IE9 AND EARLIER ARE NOT SUPPORTED**
+
 See `dev` branch for WiP HTML templates.
+
 
 ## Features
 
