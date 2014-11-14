@@ -17,7 +17,7 @@ function handleDragOver(evt) {
 	evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
 
-//-------------------------------------------------- REMOTE FILE BROWSER
+// -------------------------------------------------- REMOTE FILE BROWSER
 
 var browserCurrPath = [];
 
@@ -27,6 +27,12 @@ window.onpopstate = function(event) {
 		return;
 	browserCurrPath = event.state.split("/").filter(function(a){return a.length != 0;});
 };
+
+// http://stackoverflow.com/a/20463021/1398994
+function convertFileSize(a,b,c,d,e){
+	return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)
+	+' '+(e?'KMGTPEZY'[--e]+'iB':'B')
+}
 
 function getCurrentPath()
 {
@@ -71,7 +77,7 @@ function browse()
 			});
 			$.each(data.data.files, function(_, fn)
 			{
-				$("#browser-tbody").append("<tr class=\"browser-element\"><td>F</td><td class=\"browser-file\">"+fn.name+"</td><td>"+fn.size+"</td></tr>");
+				$("#browser-tbody").append("<tr class=\"browser-element\"><td>F</td><td class=\"browser-file\">"+fn.name+"</td><td style=\"text-align: right\">"+convertFileSize(fn.size)+"</td></tr>");
 			});
 		}
 		else
