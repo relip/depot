@@ -42,9 +42,9 @@ function browse(path)
 		console.log(data);
 		$(".browser-alert").remove();
 		$(".browser-element").remove();
-		$("#browser-tbody").append("<tr class=\"browser-element browser-parent-dir\"><td>D</td><td>..</td><td></td></tr>");
 		if(data.result)
 		{
+			$("#browser-tbody").append("<tr class=\"browser-element browser-parent-dir\"><td>D</td><td>..</td><td></td></tr>");
 			$.each(data.data.directories, function(_, fn)
 			{
 				$("#browser-tbody").append("<tr class=\"browser-element\"><td>D</td><td class=\"browser-directory\">"+fn+"</td><td><button class=\"depot-box browser-upload-all\" style=\"padding: 1px;\" type=\"button\">Upload all</button></td></tr>");
