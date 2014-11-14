@@ -235,7 +235,7 @@ function upload(path)
 			var item = $("<li class=\"list-group-item upload-list-item list_"+id+"\"><a class=\"a_"+id+"\">"+filename+"</a> </li>");
 			var progbar = $('<div class="progress"><div id="progress_'+id+'" class="progress-bar" role="progressbar" style="width: 0%;"></div></div>');
 			item.append(progbar);
-			$("#uploadList").append(item);
+			$("#uploadList").prepend(item);
 		},
 		complete: function () {
 	        },
