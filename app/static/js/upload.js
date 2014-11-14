@@ -100,15 +100,28 @@ function makeid()
 	return text;
 }
 
-function upload(filename, isRemoteFile, remotePath)
+function uploadLocal(fileobj)
 {
 	var formData = new FormData($("#uploadForm")[0]);
-	if(isRemoteFile)
-	{
-		formData.append("local", 1);
-		formData.append("path", remotePath+"/"+filename);
-	}
+	formData.append("file", fileobj);
 
+	upload(fileobj.name, formData);
+
+	$("#filenameInput").val("");
+}
+
+function uploadRemote(filename, remotePath)
+{
+	var formData = new FormData($("#uploadForm")[0]);
+
+	formData.append("local", 1);
+	formData.append("path", remotePath+"/"+filename);
+
+	upload(filename, formData);
+}
+
+function upload(filename, formData)
+{
 	var id = makeid();
 	
 	// Convert #expires_in to seconds
@@ -175,10 +188,9 @@ function upload(filename, isRemoteFile, remotePath)
 		contentType: false,
 		processData: false
 	});
-	$("#filenameInput").val("");
 }
 
-// -------------------------------------------------- EVENT LISTENER
+// -------------------------------------------------- EVENT LISTENERS
 
 $(function () {
 	$(".selectButton").click(function() {
@@ -192,14 +204,17 @@ $(function () {
 	$(".fileInput").change(function()
 	{
 		if ($(this).val().length <= 0) { return; }
-
 		$("#filenameInput").css({ 'text-align': 'left' });
-		$(".uploadProgress").removeClass("progress-bar-danger");
+ 
+		var filenames = [];
+		$.each($(this).prop("files"), function(i, fo)
+		{
+			var tempfn = fo.name.replace(/\\/g, '/');
+			tempfn = tempfn.substr(tempfn.lastIndexOf('/') + 1);
+			filenames.push(tempfn);
+		});
         
-		var filename = $(this).val().replace(/\\/g, '/');
-		filename = filename.substr(filename.lastIndexOf('/') + 1);
-        
-		$("#filenameInput").val(filename);
+		$("#filenameInput").val(filenames.join(", "));
 	});
    	$(document).on("click", ".uploadButton", function()
 	{
@@ -208,7 +223,18 @@ $(function () {
 	});
 	$("#uploadForm").submit(function (e)
 	{
-		upload($("#filenameInput").val());
+		if($(".fileInput").prop("files").length > 1)
+		{
+			if(!confirm("Upload "+$(".fileInput").prop("files").length+" files?"))
+			{
+				return;
+			}
+		}
+
+		$.each($(".fileInput").prop("files"), function(i, fo)
+		{
+			uploadLocal(fo);
+		});
 		e.preventDefault();
 	});
 	$("#open-browser").click(openBrowser);
@@ -245,7 +271,7 @@ $(function () {
 	});
 	$(document).on("click", ".browser-upload-button", function()
 	{
-		upload($(this).prev().children(".browser-file").text(), true, getCurrentPath());
+		uploadRemote($(this).prev().children(".browser-file").text(), getCurrentPath());
 	});
 	$(document).on("click", ".browser-upload-all", function()
 	{
@@ -259,7 +285,7 @@ $(function () {
 					$.each(data.data.files, function(_, fi)
 					{
 						console.log(fi.name);
-						upload(fi.name, true, getCurrentPath()+dir);
+						uploadRemote(fi.name, getCurrentPath()+dir);
 					});
 				}
 			}
