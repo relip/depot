@@ -1,3 +1,10 @@
+/*
+ * upload.js: contains file upload related functions
+ * See LICENSE
+ */
+
+// -------------------------------------------------- DRAG AND DROP
+
 function handleFileSelect(evt) {
 	evt.stopPropagation();
 	evt.preventDefault();
@@ -10,19 +17,9 @@ function handleDragOver(evt) {
 	evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
 
-function makeid()
-{
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-    for( var i=0; i < 5; i++ )
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-    return text;
-}
+//-------------------------------------------------- REMOTE FILE BROWSER
 
 var browserCurrPath = [];
-var existingGroups = [];
 
 window.onpopstate = function(event) {
 	// FIXME: Mobile Safari fires window.onpopstate even on first page load
@@ -83,6 +80,105 @@ function browse()
 		}
 	});
 }
+
+// -------------------------------------------------- XHR
+
+function timeUnitConverter(unit, value)
+{
+	var t = {"s": 1, "m": 60, "h": 3600, "d": 86400};
+	return value*t[unit];
+}
+
+function makeid()
+{
+	var text = "";
+	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+	for( var i=0; i < 5; i++ )
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+	return text;
+}
+
+function upload(filename, isRemoteFile, remotePath)
+{
+	var formData = new FormData($("#uploadForm")[0]);
+	if(isRemoteFile)
+	{
+		formData.append("local", 1);
+		formData.append("path", remotePath+"/"+filename);
+	}
+
+	var id = makeid();
+	
+	// Convert #expires_in to seconds
+	if($("#expires_in").val() !== "")
+	{
+		console.log(timeUnitConverter($("#expires_in").val(), $("#expires_in_unit").val()));
+		formData.append("expires_in", timeUnitConverter($("#expires_in_unit").val(), $("#expires_in").val()));
+	}
+
+	var fileext = filename.split('.').pop();
+
+	$.ajax({
+		url: "/upload",
+		type: "POST",
+		xhr: function()
+		{
+			var xhr = $.ajaxSettings.xhr();
+			if (xhr.upload)
+			{
+				xhr.upload.addEventListener('progress', function(event)
+				{
+					var value = (event.loaded / event.total) * 100;  
+					$("#progress_"+id).css({ width: value + "%" });
+				}, false);
+			}
+            
+			return xhr;
+		},
+		beforeSend: function ()
+		{
+			var item = $("<li class=\"list-group-item upload-list-item list_"+id+"\"><a class=\"a_"+id+"\">"+filename+"</a> </li>");
+			var progbar = $('<div class="progress"><div id="progress_'+id+'" class="progress-bar" role="progressbar" style="width: 0%;"></div></div>');
+			item.append(progbar);
+			$("#uploadList").prepend(item);
+		},
+		complete: function () {
+	        },
+		success: function(data)
+		{
+			var data = JSON.parse(data);
+			console.log(data);
+			var item = $(".list_"+id);
+			if(data.result)
+			{
+				var fullurl = location.origin + "/" + data.path;
+				var link = "<a href=\"" + fullurl + "\">"+fullurl+"</a>";
+				var s = " " + link;
+				s += "<div class=\"row\">";
+				s += "<div class=\"col-xs-12 col-sm-6\" style=\"display: inline-block\"><h4>Information</h4><input type=\"text\" value=\""+fullurl+"\" class=\"form-control link-container\" /></div>";
+				s += "<div class=\"col-xs-12 col-sm-6\" style=\"display: inline-block\"><h4>Direct download</h4><input type=\"text\" value=\""+fullurl+"."+fileext+"\" class=\"form-control link-container\" /></div>";
+				s += "</div>";
+				$(".a_"+id).after(s);
+				$("#prgoress_"+id).css({ width: "100%" });
+			}
+			else
+			{
+				$(".a_"+id).after(" - <span style=\"color: red\">Error: "+data.message+"</span>");
+			}
+		},
+        	error: function (xhr, ajaxOptions, thrownError) {
+	        },
+		data: formData,
+        	cache: false,
+		contentType: false,
+		processData: false
+	});
+	$("#filenameInput").val("");
+}
+
+// -------------------------------------------------- EVENT LISTENER
 
 $(function () {
 	$(".selectButton").click(function() {
@@ -198,86 +294,3 @@ $(function () {
 	}
 });
 
-function timeUnitConverter(unit, value)
-{
-	var t = {"s": 1, "m": 60, "h": 3600, "d": 86400};
-	return value*t[unit];
-}
-
-function upload(filename, isRemoteFile, remotePath)
-{
-	var formData = new FormData($("#uploadForm")[0]);
-	if(isRemoteFile)
-	{
-		formData.append("local", 1);
-		formData.append("path", remotePath+"/"+filename);
-	}
-
-	var id = makeid();
-	
-	// Convert #expires_in to seconds
-	if($("#expires_in").val() !== "")
-	{
-		console.log(timeUnitConverter($("#expires_in").val(), $("#expires_in_unit").val()));
-		formData.append("expires_in", timeUnitConverter($("#expires_in_unit").val(), $("#expires_in").val()));
-	}
-
-	var fileext = filename.split('.').pop();
-
-	$.ajax({
-		url: "/upload",
-		type: "POST",
-		xhr: function()
-		{
-			var xhr = $.ajaxSettings.xhr();
-			if (xhr.upload)
-			{
-				xhr.upload.addEventListener('progress', function(event)
-				{
-					var value = (event.loaded / event.total) * 100;  
-					$("#progress_"+id).css({ width: value + "%" });
-				}, false);
-			}
-            
-			return xhr;
-		},
-		beforeSend: function ()
-		{
-			var item = $("<li class=\"list-group-item upload-list-item list_"+id+"\"><a class=\"a_"+id+"\">"+filename+"</a> </li>");
-			var progbar = $('<div class="progress"><div id="progress_'+id+'" class="progress-bar" role="progressbar" style="width: 0%;"></div></div>');
-			item.append(progbar);
-			$("#uploadList").prepend(item);
-		},
-		complete: function () {
-	        },
-		success: function(data)
-		{
-			var data = JSON.parse(data);
-			console.log(data);
-			var item = $(".list_"+id);
-			if(data.result)
-			{
-				var fullurl = location.origin + "/" + data.path;
-				var link = "<a href=\"" + fullurl + "\">"+fullurl+"</a>";
-				var s = " " + link;
-				s += "<div class=\"row\">";
-				s += "<div class=\"col-xs-12 col-sm-6\" style=\"display: inline-block\"><h4>Information</h4><input type=\"text\" value=\""+fullurl+"\" class=\"form-control link-container\" /></div>";
-				s += "<div class=\"col-xs-12 col-sm-6\" style=\"display: inline-block\"><h4>Direct download</h4><input type=\"text\" value=\""+fullurl+"."+fileext+"\" class=\"form-control link-container\" /></div>";
-				s += "</div>";
-				$(".a_"+id).after(s);
-				$("#prgoress_"+id).css({ width: "100%" });
-			}
-			else
-			{
-				$(".a_"+id).after(" - <span style=\"color: red\">Error: "+data.message+"</span>");
-			}
-		},
-        	error: function (xhr, ajaxOptions, thrownError) {
-	        },
-		data: formData,
-        	cache: false,
-		contentType: false,
-		processData: false
-	});
-	$("#filenameInput").val("");
-}
