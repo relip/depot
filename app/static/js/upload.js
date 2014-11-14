@@ -22,7 +22,6 @@ function makeid()
 }
 
 var browserCurrPath = [];
-var isRemoteFile = false;
 var existingGroups = [];
 
 window.onpopstate = function(event) {
@@ -98,8 +97,6 @@ $(function () {
 	{
 		if ($(this).val().length <= 0) { return; }
 
-        	isRemoteFile = false;
-
 		$("#filenameInput").css({ 'text-align': 'left' });
 		$(".uploadProgress").removeClass("progress-bar-danger");
         
@@ -115,10 +112,7 @@ $(function () {
 	});
 	$("#uploadForm").submit(function (e)
 	{
-		if (isRemoteFile)
-			upload(getCurrentPath()+$("#filenameInput").val());
-		else
-			upload();
+		upload($("#filenameInput").val());
 		e.preventDefault();
 	});
 	$("#open-browser").click(openBrowser);
@@ -151,9 +145,11 @@ $(function () {
 	$(document).on("click", ".browser-file", function()
 	{
 		$(".browser-upload-button").remove();
-		$("#filenameInput").val($(this).text());
-		$(this).parent().after("<tr class=\"browser-element browser-upload-button\"><th colspan=\"3\"><button class=\"depot-box uploadButton\" type=\"button\" style=\"width: 100%;\">Upload</button></th></tr>");
-		isRemoteFile = true;
+		$(this).parent().after("<tr class=\"browser-element browser-upload-button\"><th colspan=\"3\"><button class=\"depot-box browser-upload\" type=\"button\" style=\"width: 100%;\">Upload</button></th></tr>");
+	});
+	$(document).on("click", ".browser-upload-button", function()
+	{
+		upload($(this).prev().children(".browser-file").text(), true, getCurrentPath());
 	});
 	$(document).on("click", ".browser-upload-all", function()
 	{
@@ -167,9 +163,7 @@ $(function () {
 					$.each(data.data.files, function(_, fi)
 					{
 						console.log(fi.name);
-						isRemoteFile = true;
-						$("#filenameInput").val(fi.name);
-						upload(getCurrentPath()+dir+"/"+fi.name);
+						upload(fi.name, true, getCurrentPath()+dir);
 					});
 				}
 			}
@@ -210,15 +204,15 @@ function timeUnitConverter(unit, value)
 	return value*t[unit];
 }
 
-function upload(path)
+function upload(filename, isRemoteFile, remotePath)
 {
 	var formData = new FormData($("#uploadForm")[0]);
 	if(isRemoteFile)
 	{
 		formData.append("local", 1);
-		console.log(path);
-		formData.append("path", path);
+		formData.append("path", remotePath+"/"+filename);
 	}
+
 	var id = makeid();
 	
 	// Convert #expires_in to seconds
@@ -228,7 +222,6 @@ function upload(path)
 		formData.append("expires_in", timeUnitConverter($("#expires_in_unit").val(), $("#expires_in").val()));
 	}
 
-	var filename = $("#filenameInput").val();
 	var fileext = filename.split('.').pop();
 
 	$.ajax({
@@ -287,5 +280,4 @@ function upload(path)
 		processData: false
 	});
 	$("#filenameInput").val("");
-	isRemoteFile = false;
 }
