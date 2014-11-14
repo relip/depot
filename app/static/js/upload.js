@@ -52,6 +52,7 @@ function openBrowser()
 	}
 	else
 	{
+		history.pushState("", "", window.location.pathname+window.location.search);
 		$("#open-browser").text("Open remote file browser");
 		$("#browser").hide();
 	}
