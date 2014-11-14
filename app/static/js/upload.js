@@ -47,12 +47,12 @@ function openBrowser()
 		$("#open-browser").text("Close remote file browser");
 		$("#browser").slideDown("fast");
 		$("#browser-tbody").append("<tr><th colspan=\"3\" class=\"browser-alert\">Loading</th></tr>");
-		history.pushState(getCurrentPath(), "", "#"+getCurrentPath());
+		history.pushState(getCurrentPath(), document.title, "#"+getCurrentPath());
 		browse();
 	}
 	else
 	{
-		history.pushState("", "", window.location.pathname+window.location.search);
+		history.pushState("", document.title, window.location.pathname+window.location.search);
 		$("#open-browser").text("Open remote file browser");
 		$("#browser").hide();
 	}
@@ -134,7 +134,7 @@ $(function () {
 	$(document).on("click", ".browser-directory", function()
 	{
 		browserCurrPath.push($(this).text());
-		history.pushState(getCurrentPath(), "", "#"+getCurrentPath());
+		history.pushState(getCurrentPath(), document.title, "#"+getCurrentPath());
 		browse();
 	});
 	$(document).on("click", ".browser-parent-dir", function()
@@ -145,7 +145,7 @@ $(function () {
 			return;
 		}
 		browserCurrPath.pop()
-		history.pushState(getCurrentPath(), "", "#"+getCurrentPath());
+		history.pushState(getCurrentPath(), document.title, "#"+getCurrentPath());
 		browse()
 	});
 	$(document).on("click", ".browser-file", function()
