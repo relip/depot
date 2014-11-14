@@ -21,7 +21,7 @@ function makeid()
     return text;
 }
 
-var browserCurrPath = "/";
+var browserCurrPath = [];
 var isRemoteFile = false;
 var existingGroups = [];
 
@@ -29,15 +29,38 @@ window.onpopstate = function(event) {
 	// FIXME: Mobile Safari fires window.onpopstate even on first page load
 	if(event.state == null)
 		return;
-	browserCurrPath = event.state;
-	browse(event.state);
-	console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+	browserCurrPath = event.state.split("/").filter(function(a){return a.length != 0;});
 };
 
-function browse(path)
+function getCurrentPath()
 {
-	$("#browser-currdir").text(browserCurrPath);
-	$.getJSON("/api/browse?path="+path, function(data)
+	var res = "/"+browserCurrPath.join("/");
+	if(browserCurrPath.length)
+		res += "/";
+	return res;
+}
+
+function openBrowser()
+{
+	if($("#browser").is(":hidden"))
+	{
+		$("#open-browser").text("Close remote file browser");
+		$("#browser").slideDown("fast");
+		$("#browser-tbody").append("<tr><th colspan=\"3\" class=\"browser-alert\">Loading</th></tr>");
+		history.pushState(getCurrentPath(), "", "#"+getCurrentPath());
+		browse();
+	}
+	else
+	{
+		$("#open-browser").text("Open remote file browser");
+		$("#browser").hide();
+	}
+}
+
+function browse()
+{
+	$("#browser-currdir").text(getCurrentPath());
+	$.getJSON("/api/browse?path="+getCurrentPath(), function(data)
 	{
 		console.log(data);
 		$(".browser-alert").remove();
@@ -92,27 +115,12 @@ $(function () {
 	$("#uploadForm").submit(function (e)
 	{
 		if (isRemoteFile)
-			upload(browserCurrPath+$("#filenameInput").val());
+			upload(getCurrentPath()+$("#filenameInput").val());
 		else
 			upload();
 		e.preventDefault();
 	});
-	$("#open-browser").click(function()
-	{
-		if($("#browser").is(":hidden"))
-		{
-			$(this).text("Close remote file browser");
-			$("#browser").slideDown("fast");
-			$("#browser-tbody").append("<tr><th colspan=\"3\" class=\"browser-alert\">Loading</th></tr>");
-			history.pushState("/", "", "#/");
-			browse("/");
-		}
-		else
-		{
-			$(this).text("Open remote file browser");
-			$("#browser").hide();
-		}
-	});
+	$("#open-browser").click(openBrowser);
 
 	$("#create-random-group").click(function()
 	{
@@ -124,25 +132,20 @@ $(function () {
 	});
 	$(document).on("click", ".browser-directory", function()
 	{
-		browserCurrPath = browserCurrPath + $(this).text() + "/";
-		history.pushState(browserCurrPath, "", "#"+browserCurrPath);
-		browse(browserCurrPath);
+		browserCurrPath.push($(this).text());
+		history.pushState(getCurrentPath(), "", "#"+getCurrentPath());
+		browse();
 	});
 	$(document).on("click", ".browser-parent-dir", function()
 	{
 		$("#filenameInput").val("");
-		browserCurrPath = browserCurrPath.split("/").filter(function(a){return a.length != 0;});
-		if(!browserCurrPath)
+		if(!browserCurrPath.length)
 		{
 			return;
 		}
-		currPathList = browserCurrPath.splice(0, browserCurrPath.length-1);
-		console.log(currPathList);
-		browserCurrPath = "/" + currPathList.join("/");
-		if(currPathList.length != 0)
-			browserCurrPath = browserCurrPath + "/";
-		history.pushState(browserCurrPath, "", "#"+browserCurrPath);
-		browse(browserCurrPath);
+		browserCurrPath.pop()
+		history.pushState(getCurrentPath(), "", "#"+getCurrentPath());
+		browse()
 	});
 	$(document).on("click", ".browser-file", function()
 	{
@@ -154,7 +157,7 @@ $(function () {
 	$(document).on("click", ".browser-upload-all", function()
 	{
 		var dir = $(this).parent().parent().children(".browser-directory").text();
-		$.getJSON("/api/browse?path="+browserCurrPath+dir, function(data)
+		$.getJSON("/api/browse?path="+getCurrentPath()+dir, function(data)
 		{
 			if(data.data.files.length > 0)
 			{
@@ -165,7 +168,7 @@ $(function () {
 						console.log(fi.name);
 						isRemoteFile = true;
 						$("#filenameInput").val(fi.name);
-						upload(browserCurrPath+dir+"/"+fi.name);
+						upload(getCurrentPath()+dir+"/"+fi.name);
 					});
 				}
 			}
@@ -181,9 +184,23 @@ $(function () {
 		$(this).select();
 	});
 
+	$(window).bind('hashchange', function () {
+		var hash = window.location.hash.substring(1);
+		console.log(hash);
+		browserCurrPath = hash.split("/").filter(function(a){return a.length != 0;});
+		browse();
+	});
+
 	var dropZone = document.getElementById('filenameInput');
 	dropZone.addEventListener('dragover', handleDragOver, false);
 	dropZone.addEventListener('drop', handleFileSelect, false);
+
+	if(window.location.hash)
+	{
+		var hash = window.location.hash.substring(1);
+		browserCurrPath = hash.split("/").filter(function(a){return a.length != 0;});
+		openBrowser();
+	}
 });
 
 function timeUnitConverter(unit, value)
