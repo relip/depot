@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>{{ groupData.Path }} <small>{{ groupData.Description }}</small></h3>
+<script type="text/javascript" src="/static/js/group.js"></script>
+<h2>{{ groupData.Path }} <br />
+<small>{{ groupData.Description }}{%- if session["user_id"] %}<span class="glyphicon glyphicon-pencil edit-description" data-path="{{groupData.Path}}" aria-hidden="true"></span>{%- endif %}</small>
+</h2>
 <a class="depot-box" href="{{ url_for("group_zip", path=groupData.Path) }}">Download ZIP file</a>
 <table class="table table-striped">
 	<thead>

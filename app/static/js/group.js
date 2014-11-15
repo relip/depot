@@ -17,5 +17,10 @@ $(function()
 		}, "json");
 		$(this).parent().html($(this).val()+'<span class="glyphicon glyphicon-pencil edit-description" data-path="'+$(this).attr("data-path")+'" aria-hidden="true"></span>');
 	});
+	$(document).on("keyup", ".description-editor", function(e)
+	{
+		if(e.which == 13) // Enter key
+			$(this).blur();
+	});
 });
 
