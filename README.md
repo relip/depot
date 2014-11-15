@@ -26,6 +26,7 @@ SQLAlchemy
 Flask
 Flask-Login
 Flask-Bcrypt
+geoip2
 ```
 
 ## Installation
