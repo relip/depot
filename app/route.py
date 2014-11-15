@@ -35,7 +35,10 @@ from sqlalchemy.exc import IntegrityError
 from app import app
 from app import db
 
+import addon
 import model
+
+addon.init()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -498,8 +501,17 @@ def path_transmit(path, fileData):
 		return render_template("limit_exceeded.html")
 
 	fileData.Downloaded = model.Path.Downloaded + 1
+
+	geoipISOCode = "-"
+	if app.config.get("ENABLE_GEOIP", False):
+		try:
+			geoipISOCode = addon.geoipGetCountry(request.remote_addr)
+		except:
+			import traceback
+			print traceback.format_exc()
+		
 	db.session.add(model.History(path, request.remote_addr, int(time.time()), 
-		request.user_agent.string, request.referrer, "-"))
+		request.user_agent.string, request.referrer, geoipISOCode))
 
 	db.session.commit()
 
