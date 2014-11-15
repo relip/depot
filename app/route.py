@@ -387,11 +387,12 @@ def group_delete(path, groupData):
 	try:
 		groupQuery = model.Group.query.filter(model.Group.Path == path)
 		groupQuery.delete()
+		db.session.commit()
 		return redirect(url_for("overview"))
 	except:
 		return traceback.format_exc()
 
-@app.route("/group/<path>/modify")
+@app.route("/group/<path>/modify", methods=["POST"])
 @login_required
 @check_if_path_is_valid(model.Group)
 def group_modify(path, groupData):
