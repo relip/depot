@@ -1,3 +1,15 @@
-{% for gi in groups %}
-{{gi.Path}}
-{% endfor %}
+{% extends "base.html" %}
+{% block content %}
+<script type="text/javascript" src="/static/js/group.js"></script>
+<h2>Groups<span class="pull-right">{{ grous | length }} groups</small></h2>
+<table class="table table-striped">
+	<thead>
+		<tr><th>Path</th><th>Files</th><th style="width:100%">Description</th><th>Action</th></tr>
+	</thead>
+	<tbody>
+	{%- for gi in groups %}
+		<tr><td><a href="{{url_for("group_information", path=gi.Path)}}">{{gi.Path}}</a></td><td>{{gi.Paths | length}} files</td><td>{{gi.Description}}<span class="glyphicon glyphicon-pencil edit-description" data-path="{{gi.Path}}" aria-hidden="true"></span></td><td><a class="btn btn-danger" href="{{url_for("group_delete", path=gi.Path)}}">Delete</a></td></tr>
+	{%- endfor %}
+	</tbody>
+</table>
+{% endblock %}
