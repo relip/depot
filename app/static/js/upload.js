@@ -128,6 +128,19 @@ function uploadRemote(filename, remotePath)
 
 function upload(filename, formData)
 {
+	if($("#group-name").val())
+	{
+		$.post("/groups/create", {group_path: $("#group-name").val()}, function(data)
+		{
+			uploadWithoutGroupCreation(filename, formData);
+		}, "json");
+	}
+	else
+		uploadWithoutGroupCreation(filename, formData);
+}
+
+function uploadWithoutGroupCreation(filename, formData)
+{
 	var id = makeid();
 	
 	// Convert #expires_in to seconds
