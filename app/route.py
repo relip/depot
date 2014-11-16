@@ -129,29 +129,6 @@ def _transmit_file(fileName, storedPath):
 def _generate_random_string(n):
 	return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(n))
 
-# Flask filters
-
-def _filter_convertTime(value, format='%Y/%m/%d %H:%M:%S'):
-	return datetime.datetime.fromtimestamp(value).strftime(format)
-
-def _filter_convertSize(size):
-	if size <= 0:
-		return "0B"
-	size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-	i = int(math.floor(math.log(size,1024)))
-	p = math.pow(1024,i)
-	s = round(int(size)/p,2)
-	if s > 0:
-		return '%s%s' % (s,size_name[i])
-	else:
-		return "0B"
-
-app.jinja_env.filters['convertTime'] = _filter_convertTime
-app.jinja_env.filters['urljoin'] = urlparse.urljoin
-app.jinja_env.filters['convertSize'] = _filter_convertSize
-
-#############################################################
-
 @login_manager.user_loader
 def load_user(uid):
 	return model.User.query.filter(model.User.No == int(uid)).first()
