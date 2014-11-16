@@ -34,6 +34,8 @@ from app import db
 
 import addon
 import model
+import file
+import common
 
 addon.init()
 
@@ -44,87 +46,6 @@ login_manager.init_app(app)
 
 def _empty_string_to_none(s):
 	return s if s != "" else None
-
-def _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
-	pathLength = 3 # default
-	while True:
-		try:
-			newPath = model.Path(_generate_random_string(int(pathLength)), fileNo,
-				fileName, int(time.time()), optExpiresIn, optDownloadLimit,
-				optHideAfterLimitExceeded, optGroup)
-			db.session.add(newPath)
-			db.session.commit()
-			break
-		except IntegrityError:
-			print traceback.format_exc()
-			pathLength += 0.2 # increase length every five attempts
-			db.session.rollback()
-
-	return newPath
-
-def _store_file(fp):
-	realFilename = fp.filename
-	md5sum = _hash_file(fp, hashlib.md5())
-	sha1sum = _hash_file(fp, hashlib.sha1())
-	fp.seek(0)
-
-	fileData = model.File.query.filter(model.File.MD5Sum == md5sum,
-		model.File.SHA1Sum == sha1sum).first()
-
-	if not fileData:
-		while True:
-			newFilename = _generate_random_string(32)
-			if not os.path.exists(os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)):
-				break
-		fullPath = os.path.join(app.config['UPLOAD_FULL_DIRECTORY'], newFilename)
-		fp.save(fullPath)
-		fileSize = os.stat(fullPath).st_size
-		fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename),
-			md5sum, sha1sum, fileSize)
-		db.session.add(fileData)
-		db.session.commit()
-
-	# FIXME: Set to None if the value is empty string which cause exception when checking for settings
-	optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
-	optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
-	optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
-	optGroup = _empty_string_to_none(request.form.get("group"))
-
-	newPath = _create_path(fileData.No, realFilename, optExpiresIn, optDownloadLimit,
-		optHideAfterLimitExceeded, optGroup)
-
-	return json.dumps({"result": True, "path": newPath.Path})
-
-# http://stackoverflow.com/questions/3431825/generating-a-md5-checksum-of-a-file
-def _hash_file(afile, hasher, blocksize=65536):
-	afile.seek(0)
-	buf = afile.read(blocksize)
-	while len(buf) > 0:
-		hasher.update(buf)
-		buf = afile.read(blocksize)
-	return hasher.hexdigest()
-
-def _transmit_file(fileName, storedPath):
-	if app.config.get("HTTPD_USE_X_SENDFILE", False):
-		response = make_response()
-		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileName.encode("utf-8"))
-		response.headers["Content-Type"] = mimetypes.guess_type(fileName)[0]
-		httpdType = app.config.get("HTTPD_TYPE", "nginx")
-
-		if httpdType == "apache" or httpdType == "lighttpd":
-			response.headers["X-Sendfile"] = os.path.join(app.config["UPLOAD_BASE_DIR"], storedPath.encode("utf-8"))
-		else: # nginx and others
-			response.headers["X-Accel-Redirect"] = os.path.join(app.config.get("HTTPD_BASE_DIR", "/"), storedPath.encode("utf-8"))
-
-		return response
-	else:
-		response = make_response(send_file(os.path.join(app.config["UPLOAD_BASE_DIR"], storedPath),
-			mimetype=mimetypes.guess_type(fileName)[0]))
-		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileName.encode("utf-8"))
-		return response
-
-def _generate_random_string(n):
-	return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for x in range(n))
 
 @login_manager.user_loader
 def load_user(uid):
@@ -190,8 +111,8 @@ def upload():
 			#elif os.path.islink(normalizedPath)
 			else:
 				with open(normalizedFullPath, "r") as fp:
-					md5sum = _hash_file(fp, hashlib.md5())
-					sha1sum = _hash_file(fp, hashlib.sha1())
+					md5sum = file._hash_file(fp, hashlib.md5())
+					sha1sum = file._hash_file(fp, hashlib.sha1())
 					fp.seek(0)
 
 				fileData = model.File.query.filter(model.File.MD5Sum == md5sum,
@@ -209,7 +130,7 @@ def upload():
 				optGroup = _empty_string_to_none(request.form.get("group", None))
 
 				# _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
-				newPath = _create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
+				newPath = model.create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
 					optHideAfterLimitExceeded, optGroup)
 
 			#	fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename),
@@ -217,7 +138,7 @@ def upload():
 				return json.dumps({"result": True, "path": newPath.Path})
 		else:
 			fp = request.files["file"]
-			return _store_file(fp)
+			return file.store(fp)
 
 	else:
 		return render_template("upload.html")
@@ -226,7 +147,7 @@ def upload():
 @login_required
 def api_regenerate_key():
 	uinfo = load_user(session["user_id"])
-	uinfo.APIKey = _generate_random_string(32)
+	uinfo.APIKey = common.generate_random_string(32)
 	db.session.commit()
 	return redirect(url_for("overview"))
 
@@ -242,7 +163,7 @@ def api_tweetbot():
 		print request.files
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
-		result = json.loads(_store_file(request.files["media"]))
+		result = json.loads(file.store(request.files["media"]))
 		return json.dumps({"url": request.url_root + result["path"] + fileExtension})
 
 @app.route("/api/twitpic", methods=["GET", "POST"])
@@ -255,7 +176,7 @@ def api_twitpic():
 		print request.files
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
-		result = json.loads(_store_file(request.files["media"]))
+		result = json.loads(file.store(request.files["media"]))
 		return "<rsp status=\"ok\"><mediaurl>%s</mediaurl></rsp>" % (request.url_root + result["path"] + fileExtension)
 
 @app.route("/api/browse")
@@ -318,7 +239,7 @@ def create_group():
 			pathLength = 3 # default
 			while True:
 				try:
-					groupPath = _generate_random_string(int(pathLength))
+					groupPath = common.generate_random_string(int(pathLength))
 					db.session.add(model.Group(groupPath,
 						request.form.get("description", "")))
 					db.session.commit()
@@ -393,7 +314,7 @@ def group_zip(path, groupData):
 
 	db.session.commit()
 
-	zPath = os.path.join("/tmp", _generate_random_string(32))
+	zPath = os.path.join("/tmp", common.generate_random_string(32))
 	zFp = zipfile.ZipFile(zPath, "w", app.config.get("ZIP_METHOD", zipfile.ZIP_DEFLATED))
 	for fileData in groupData.Paths:
 		zFp.write(os.path.join(app.config["UPLOAD_BASE_DIR"], fileData.File.StoredPath), fileData.ActualName)
@@ -434,7 +355,7 @@ def signup():
 
 	elif (request.method == "POST" and
 		request.form["id"] and request.form["password"]):
-		u = model.User(request.form["id"], generate_password_hash(request.form["password"]), _generate_random_string(32))
+		u = model.User(request.form["id"], generate_password_hash(request.form["password"]), common.generate_random_string(32))
 		db.session.add(u)
 		db.session.commit()
 		return redirect(url_for("signin"))
@@ -503,7 +424,7 @@ def path_transmit(path, fileData):
 
 	db.session.commit()
 
-	return _transmit_file(fileData.ActualName, fileData.File.StoredPath)
+	return file.transmit(fileData.ActualName, fileData.File.StoredPath)
 
 @app.route("/<path>/analyze")
 @login_required
@@ -556,7 +477,7 @@ def file_information(no, fileData):
 @login_required
 @check_if_file_is_valid()
 def file_transmit(no, fileData):
-	return _transmit_file("File_%s"%(no), fileData.StoredPath)
+	return file.transmit("File_%s"%(no), fileData.StoredPath)
 
 @app.route("/file/<no>/delete")
 @login_required

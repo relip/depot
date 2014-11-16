@@ -1,6 +1,33 @@
 # -*- coding: utf-8 -*-
 
+import time
+import traceback
+
 from app import db
+from app import app
+
+from flask import request
+from flask import make_response
+from flask import send_from_directory
+
+import common
+
+def create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
+	pathLength = 3 # default
+	while True:
+		try:
+			newPath = Path(common.generate_random_string(int(pathLength)), fileNo,
+				fileName, int(time.time()), optExpiresIn, optDownloadLimit,
+				optHideAfterLimitExceeded, optGroup)
+			db.session.add(newPath)
+			db.session.commit()
+			break
+		except IntegrityError:
+			print traceback.format_exc()
+			pathLength += 0.2 # increase length every five attempts
+			db.session.rollback()
+
+	return newPath
 
 class User(db.Model):
 	__tablename__ = "User"
