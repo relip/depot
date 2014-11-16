@@ -7,14 +7,17 @@ SERVER_POST = 8000
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # The database URI that should be used for the connection.
-# Example: dialect+driver://username:password@host:port/database
+# Example: SQLALCHEMY_DATABASE_URI = "dialect+driver://username:password@host:port/database"
 # For further information, 
-# See http://pythonhosted.org//Flask-SQLAlchemy/config.html#connection-uri-format 
-SQLALCHEMY_DATABASE_URI = ""
+# See http://pythonhosted.org//Flask-SQLAlchemy/config.html#connection-uri-format
+# Default value is sqlite:////current/directory/depot.db
+SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'depot.db')
 
 # SQLALCHEMY_ECHO = True
 
+# Upload destination setting
 UPLOAD_BASE_DIR = "/storage/"
+
 # This must be located under UPLOAD_BASE_DIR and must not starts with slash.
 UPLOAD_DIRECTORY = "depot"
 
