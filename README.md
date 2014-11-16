@@ -26,6 +26,7 @@ SQLAlchemy
 Flask
 Flask-Login
 Flask-Bcrypt
+Flask-SQLAlchemy
 geoip2
 ```
 
