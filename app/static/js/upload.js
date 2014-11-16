@@ -199,6 +199,7 @@ function uploadWithoutGroupCreation(filename, formData)
 			{
 				$(".a_"+id).after(" - <span style=\"color: red\">Error: "+data.message+"</span>");
 			}
+			$(".fileInput").replaceWith($(".fileInput").val("").clone(true));
 		},
         	error: function (xhr, ajaxOptions, thrownError) {
 	        },
@@ -228,11 +229,12 @@ $(function () {
 		var filenames = [];
 		$.each($(this).prop("files"), function(i, fo)
 		{
+			console.log(fo);
 			var tempfn = fo.name.replace(/\\/g, '/');
 			tempfn = tempfn.substr(tempfn.lastIndexOf('/') + 1);
 			filenames.push(tempfn);
 		});
-        
+
 		$("#filenameInput").val(filenames.join(", "));
 	});
    	$(document).on("click", ".uploadButton", function()
