@@ -102,40 +102,8 @@ def upload():
 			if "\x00" in request.form["path"]:
 				return json.dumps({"result": False})
 
-			# Without UPLOAD_BASE_DIR
 			normalizedPath = os.path.abspath(request.form["path"]).lstrip("/")
-			normalizedFullPath = os.path.join(app.config["UPLOAD_BASE_DIR"], normalizedPath)
-
-			if not os.path.isfile(normalizedFullPath):
-				return json.dumps({"result": False, "message": "Given path is not a file"})
-			#elif os.path.islink(normalizedPath)
-			else:
-				with open(normalizedFullPath, "r") as fp:
-					md5sum = file._hash_file(fp, hashlib.md5())
-					sha1sum = file._hash_file(fp, hashlib.sha1())
-					fp.seek(0)
-
-				fileData = model.File.query.filter(model.File.MD5Sum == md5sum,
-					model.File.SHA1Sum == sha1sum).first()
-
-				if not fileData:
-					fileSize = os.stat(normalizedFullPath).st_size
-					fileData = model.File(normalizedPath, md5sum, sha1sum, fileSize)
-					db.session.add(fileData)
-					db.session.commit()
-
-				optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
-				optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
-				optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
-				optGroup = _empty_string_to_none(request.form.get("group", None))
-
-				# _create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
-				newPath = model.create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
-					optHideAfterLimitExceeded, optGroup)
-
-			#	fileData = model.File(os.path.join(app.config["UPLOAD_DIRECTORY"], newFilename),
-			#		md5sum, sha1sum, fileSize)
-				return json.dumps({"result": True, "path": newPath.Path})
+			return file.store_local(normalizedPath)
 		else:
 			fp = request.files["file"]
 			return file.store(fp)
