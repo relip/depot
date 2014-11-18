@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block content %}
+{%- block content %}
 <script>
 $(function()
 {
@@ -16,25 +16,73 @@ $(function()
 .details {
 	font-size: 1.5em;
 }
+
+body {
+	background-color: #f6f5f3;
+}
+
+.path-card {
+	width: 100%;
+	background-color: #FFFFFF;
+	margin-top: 1px;
+	padding: 20px;
+}
+
+.path-card .path-left {
+	display: inline-block;
+}
+
+.path-card .path-left .path-name {
+	font-size: 20px;
+}
+
+.path-card .path-left .path-data {
+	margin-right: 10px;
+	font-size: 13px;
+}
+
+.path-card .path-left .path-menu a {
+	color: #999;
+}
+
+.path-card .path-right {
+}
+
+.path-card .path-right .path-data {
+	margin-bottom: 5px;
+/*	text-align: right;*/
+}
+
+.path-card .path-right .path-data .glyphicon {
+	margin-right: 5px;
+}
+
 </style>
 <div class="details">
-API Key: {{ request.url_root | urljoin(url_for("api_tweetbot")+"?api_key="+userInfo.APIKey) }}  <div class="depot-box api-regenerate-button" style="display: inline; cursor: default;">Regenerate Key</div>
-<br />
-Paths: {{ pathCount }} / Total path size: {{pathSizeSum[0][0] | convertSize }} / Total file size: {{fileSizeSum[0][0] | convertSize }}
 </div>
-<table class="table table-striped">
-	<thead>
-		<tr><th>Path</th><th>File path</th><th>File name</th><th>Uploaded</th><th>Size</th><th></th><th></tr>
-	</thead>
-	<tbody>
-	{% for path in paths %}
-		<tr><td><a href="/{{path.Path}}">{{ path.Path }}</a></td><td><a href="{{ url_for("file_information", no=path.FileNo) }}">File #{{ path.File.No }}</td><td>{{ path.ActualName }}</td><td>{{ path.Uploaded | convertTime }}</td><td>{{ path.File.Size | convertSize }}</td><td><a href="/{{path.Path}}/actual">ACTUAL</a></td><td><a href="/{{path.Path}}/analyze">ANALYZE</a></td>
-	{% endfor %} 
-	</tbody>
-</table>
-<center>
-{% for page in range(1, ((pathCount/50) | round(0, 'ceil') | int)+2) %}
-<span style="margin: 10px"><a href="{{url_for("overview")}}?page={{page}}">{{page}}</a></span>
-{% endfor %}
-</center>
-{% endblock %}
+<h2>Recents</h2>
+{%- for path in paths %}
+	<div class="path-card row">
+		<div class="path-left col-sm-4">
+			<div class="path-name"><a href="/{{path.Path}}">{{ request.url_root | urljoin(url_for("path_information", path=path.Path)) }}</a></div>
+			<div class="path-info">
+				<span class="path-data"><a href="{{ url_for("file_information", no=path.FileNo) }}">File #{{ path.File.No }}</a></span>
+				<span class="path-data">{{ path.File.Size | convertSize }}</span>
+				<span class="path-data path-menu"><a href="{{ url_for("path_transmit", path=path.Path) }}">ACTUAL</a></span>
+				<span class="path-data path-menu"><a href="{{ url_for("path_analyze", path=path.Path) }}">STATS</a></span>
+			</div>
+		</div>
+		<div class="path-right pull-right col-xs-12 col-sm-3 col-sm-offset-5">
+			<div class="path-data"><span class="glyphicon glyphicon-file" aria-hidden="true"></span> {{ path.ActualName }}</div>
+			<div class="path-data"><span class="glyphicon glyphicon-time" aria-hidden="true"></span> {{ path.Uploaded | convertTime }}</div>
+		</div>
+	</div>
+{%- endfor %} 
+<nav>
+	<ul class="pagination">
+	{%- for page in range(1, ((pathCount/50) | round(0, 'ceil') | int)+2) %}
+		<li {% if request.args.get("page", "1") == (page|string) %}class="active"{% endif %}><a href="{{url_for("overview")}}?page={{page}}">{{page}}</a></li>
+	{%- endfor %}
+	</ul>
+</nav>
+{%- endblock %}
