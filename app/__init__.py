@@ -5,17 +5,17 @@ import os
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
+app = Flask(__name__)
+app.config.from_object('config')
+
 # Check and create UPLOAD_FULL_DIRECTORY recursively
 # if it doesn't exist.
-if not os.path.isdir(UPLOAD_FULL_DIRECTORY):
+if not os.path.isdir(app.config["UPLOAD_FULL_DIRECTORY"]):
 	try:
-		os.makedirs(UPLOAD_FULL_DIRECTORY)
+		os.makedirs(app.config["UPLOAD_FULL_DIRECTORY"])
 	except:
 		import traceback
 		print traceback.format_exc()
-
-app = Flask(__name__)
-app.config.from_object('config')
 
 db = SQLAlchemy(app)
 db.create_all()
