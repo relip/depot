@@ -18,10 +18,10 @@ a:hover {
 		<span style="float: right;">{{ data.ExpiresIn if data.ExpiresIn else "Forever" }}</span>
 		<div style="clear: both;"></div>
 		MD5<br />
-		<span style="float: right;">{{ data.File.MD5Sum }}</span>
+		<span style="float: right;">{{ data.File.MD5Sum | convertDBFlag }}</span>
 		<div style="clear: both;"></div>
 		SHA1<br />
-		<span style="float: right;">{{ data.File.SHA1Sum }}</span>
+		<span style="float: right;">{{ data.File.SHA1Sum | convertDBFlag }}</span>
 		<div style="clear: both;"></div>
 		File size<br />
 		<span style="float: right;">{{ data.File.Size | convertSize }}</span>

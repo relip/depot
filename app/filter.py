@@ -19,6 +19,14 @@ def convertSize(size):
 	else:
 		return "0B"
 
+db_flags = {
+	"1": "Unavailable",
+	"2": "Hashing",
+}
+
+def convertDBFlag(flag):
+	return db_flags.get(flag, flag)
+	
 urljoin = urlparse.urljoin
 
-__all__ = ["convertTime", "convertSize", "urljoin"]
+__all__ = ["convertTime", "convertSize", "urljoin", "convertDBFlag"]
