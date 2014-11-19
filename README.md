@@ -27,6 +27,8 @@ Flask
 Flask-Login
 Flask-Bcrypt
 Flask-SQLAlchemy
+Flask-Script
+Flask-Migrate
 geoip2
 ```
 
@@ -36,6 +38,8 @@ geoip2
 2. `cp config.py.example config.py`
 3. Read and modify config.py
 4. `./depot` or use uWSGI
+5. Visit http://your.domain/signup to sign up
+6. Open `config.py` and disable ENABLE_SIGNUP
 
 ## Nginx configuration
 

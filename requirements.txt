@@ -3,4 +3,6 @@ Flask
 Flask-Login
 Flask-Bcrypt
 Flask-SQLAlchemy
+Flask-Script
+Flask-Migrate
 geoip2
