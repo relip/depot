@@ -8,7 +8,6 @@ from app import app
 geipipReader = None
 
 def geoipInit():
-	print app.config.get("ENABLE_GEOIP", False)
 	if app.config.get("ENABLE_GEOIP", False):
 		try:
 			import geoip2.database
