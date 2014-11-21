@@ -9,6 +9,8 @@ from flask import request
 from flask import make_response
 from flask import send_file
 
+from sqlalchemy.exc import IntegrityError
+
 from app import app
 from app import db
 
