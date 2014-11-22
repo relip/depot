@@ -8,6 +8,7 @@ import json
 from flask import request
 from flask import make_response
 from flask import send_file
+from flask import render_template
 
 from sqlalchemy.exc import IntegrityError
 
@@ -88,6 +89,8 @@ def _hash_file(afile, hasher, blocksize=65536):
 	return hasher.hexdigest()
 
 def transmit(fileName, storedPath):
+	if not os.path.isfile(os.path.join(app.config["UPLOAD_BASE_DIR"], storedPath)):
+		return render_template("no_such_file.html")
 	if app.config.get("HTTPD_USE_X_SENDFILE", False):
 		response = make_response()
 		response.headers["Content-Disposition"] = "inline; filename=\"%s\""%(fileName.encode("utf-8"))
