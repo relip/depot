@@ -92,6 +92,8 @@ def shutdown_session(exception=None):
 
 @app.route("/")
 def index():
+	if session.get("user_id", False):
+		return redirect(url_for("overview"))
 	return render_template("index.html")
 
 @app.route("/upload", methods=["GET", "POST"])
