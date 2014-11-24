@@ -92,6 +92,8 @@ def shutdown_session(exception=None):
 
 @app.route("/")
 def index():
+	if session.get("user_id", False):
+		return redirect(url_for("overview"))
 	return render_template("index.html")
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -357,8 +359,8 @@ def overview():
 @check_if_path_is_valid(model.Path)
 def path_information(path, fileData):
 	if not session.get("user_id") and \
-		((fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
-		(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn)):
+			((fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
+			(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn)):
 		if fileData.HideAfterLimitExceeded:
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
@@ -371,8 +373,8 @@ def path_information(path, fileData):
 @check_if_path_is_valid(model.Path)
 def path_transmit(path, fileData):
 	if not session.get("user_id") and \
-		((fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
-		(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn)):
+			((fileData.DownloadLimit is not None and fileData.Downloaded >= fileData.DownloadLimit) or \
+			(fileData.ExpiresIn is not None and time.time() > fileData.Uploaded + fileData.ExpiresIn)):
 		if fileData.HideAfterLimitExceeded:
 			return render_template("no_such_file.html")
 		return render_template("limit_exceeded.html")
