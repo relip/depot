@@ -130,4 +130,12 @@ class History(db.Model):
 		self.Country = c
 
 
-db.create_all()
+class Config(db.Model):
+	__tablename__ = "Config"
+
+	Key = db.Column(db.String(255), primary_key=True)
+	Value = db.Column(db.Text)
+
+	def __init__(self, k, v):
+		self.Key = k
+		self.Value = v
