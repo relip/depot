@@ -36,10 +36,11 @@ geoip2
 
 1. `pip install -r requirements.txt`
 2. `cp config.py.example config.py`
-3. Read and modify config.py
+3. Customize config.py
 4. `./depot` or use uWSGI
-5. Visit http://your.domain/signup to sign up
-6. Open `config.py` and disable ENABLE_SIGNUP
+5. Visit http://your.domain/signin
+6. Sign in with auto-generated credentials (shown on the prompt)
+7. Create user
 
 ## Nginx configuration
 
