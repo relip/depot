@@ -6,7 +6,10 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config.from_object('app.config_default')
 app.config.from_object('config')
+
+app.config["UPLOAD_FULL_DIRECTORY"] = os.path.join(app.config["UPLOAD_BASE_DIR"], app.config["UPLOAD_DIRECTORY"])
 
 # Check and create UPLOAD_FULL_DIRECTORY recursively
 # if it doesn't exist.
