@@ -12,12 +12,12 @@ from flask import send_from_directory
 
 import common
 
-def create_path(fileNo, fileName, optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
+def create_path(fileNo, fileName, method="Web", optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
 	pathLength = 3 # default
 	while True:
 		try:
 			newPath = Path(common.generate_random_string(int(pathLength)), fileNo,
-				fileName, int(time.time()), optExpiresIn, optDownloadLimit,
+				fileName, int(time.time()), method, request.remote_addr, optExpiresIn, optDownloadLimit,
 				optHideAfterLimitExceeded, optGroup)
 			db.session.add(newPath)
 			db.session.commit()
@@ -78,6 +78,8 @@ class Path(db.Model):
 	Path = db.Column(db.String(255), primary_key=True, unique=True, index=True)
 	ActualName = db.Column(db.String(255))
 	Uploaded = db.Column(db.Integer, index=True)
+	Method = db.Column(db.String(255))
+	IP = db.Column(db.String(255))
 	ExpiresIn = db.Column(db.Integer, nullable=True)
 	DownloadLimit = db.Column(db.Integer, nullable=True)
 	Downloaded = db.Column(db.Integer, default=0)
@@ -88,11 +90,13 @@ class Path(db.Model):
 	Group = db.relationship("Group", foreign_keys=[GroupPath])
 	File = db.relationship("File", foreign_keys=[FileNo])
 
-	def __init__(self, p, fn, a, u, e, dl, h=False, g=None):
+	def __init__(self, p, fn, a, u, m, ip, e, dl, h=False, g=None):
 		self.Path = p
 		self.FileNo = fn
 		self.ActualName = a
 		self.Uploaded = u
+		self.Method = m
+		self.IP = ip
 		self.ExpiresIn = e
 		self.DownloadLimit = dl
 		self.HideAfterLimitExceeded = h

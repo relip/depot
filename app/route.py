@@ -100,15 +100,26 @@ def index():
 @login_required
 def upload():
 	if request.method == 'POST' or request.form.get("test", None):
+		optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
+		optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
+		optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
+		optGroup = _empty_string_to_none(request.form.get("group"))
+
 		if request.form.get("local", False) and request.form.get("path", False):
 			if "\x00" in request.form["path"]:
 				return json.dumps({"result": False})
 
 			normalizedPath = os.path.abspath(request.form["path"]).lstrip("/")
-			return file.store_local(normalizedPath)
+			fd = file.store_local(normalizedPath)
+			newPath = model.create_path(fd.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
+				optHideAfterLimitExceeded, optGroup)
 		else:
 			fp = request.files["file"]
-			return file.store(fp)
+			fd = file.store(fp)
+			newPath = model.create_path(fd.No, fp.filename, optExpiresIn, optDownloadLimit,
+				optHideAfterLimitExceeded, optGroup)
+
+		return json.dumps({"result": True, "path": newPath.Path})
 
 	else:
 		return render_template("upload.html")
@@ -133,8 +144,9 @@ def api_tweetbot():
 		print request.files
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
-		result = json.loads(file.store(request.files["media"]))
-		return json.dumps({"url": request.url_root + result["path"] + fileExtension})
+		fd = file.store(request.files["media"])
+		newPath = model.create_path(fd.No, fp.filename, "Tweetbot")
+		return json.dumps({"url": request.url_root + newPath.Path + fileExtension})
 
 @app.route("/api/twitpic", methods=["GET", "POST"])
 def api_twitpic():
@@ -146,8 +158,9 @@ def api_twitpic():
 		print request.files
 		fp = request.files["media"]
 		fileName, fileExtension = os.path.splitext(fp.filename)
-		result = json.loads(file.store(request.files["media"]))
-		return "<rsp status=\"ok\"><mediaurl>%s</mediaurl></rsp>" % (request.url_root + result["path"] + fileExtension)
+		fd = file.store(request.files["media"])
+		newPath = model.create_path(fd.No, fp.filename, "Twitpic")
+		return "<rsp status=\"ok\"><mediaurl>%s</mediaurl></rsp>" % (request.url_root + newPath.Path + fileExtension)
 
 @app.route("/api/browse")
 @login_required

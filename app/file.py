@@ -36,15 +36,7 @@ def store_local(normalizedPath):
 	db.session.add(fileData)
 	db.session.commit()
 
-	optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
-	optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
-	optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
-	optGroup = _empty_string_to_none(request.form.get("group", None))
-
-	newPath = model.create_path(fileData.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
-		optHideAfterLimitExceeded, optGroup)
-
-	return json.dumps({"result": True, "path": newPath.Path})
+	return fileData
 
 def store(fp):
 	realFilename = fp.filename
@@ -68,16 +60,7 @@ def store(fp):
 		db.session.add(fileData)
 		db.session.commit()
 
-	# FIXME: Set to None if the value is empty string which cause exception when checking for settings
-	optExpiresIn = _empty_string_to_none(request.form.get("expires_in", None))
-	optDownloadLimit = _empty_string_to_none(request.form.get("download_limit", None))
-	optHideAfterLimitExceeded = not not request.form.get("hide_after_limit_exceeded", False)
-	optGroup = _empty_string_to_none(request.form.get("group"))
-
-	newPath = model.create_path(fileData.No, realFilename, optExpiresIn, optDownloadLimit,
-		optHideAfterLimitExceeded, optGroup)
-
-	return json.dumps({"result": True, "path": newPath.Path})
+	return fileData
 
 # http://stackoverflow.com/questions/3431825/generating-a-md5-checksum-of-a-file
 def _hash_file(afile, hasher, blocksize=65536):
