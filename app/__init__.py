@@ -21,7 +21,6 @@ if not os.path.isdir(app.config["UPLOAD_FULL_DIRECTORY"]):
 		print traceback.format_exc()
 
 db = SQLAlchemy(app)
-db.create_all()
 
 # Load filters and put into jinja_env.filters
 import filter

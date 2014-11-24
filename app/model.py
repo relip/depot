@@ -139,3 +139,28 @@ class Config(db.Model):
 	def __init__(self, k, v):
 		self.Key = k
 		self.Value = v
+
+from sqlalchemy.engine.reflection import Inspector
+
+saInspector = Inspector.from_engine(db.engine)
+saTables = saInspector.get_table_names()
+
+if "Config" not in saTables and "Path" not in saTables:
+	print "-"*100
+	print "Initializing..."
+
+	print "Creating tables..."
+	db.create_all()
+	print "Created tables successfully"
+
+	tmpPW = common.generate_random_string(8)
+
+	from flask.ext.bcrypt import generate_password_hash, check_password_hash
+
+	print "Creating default user..."
+	db.session.add(User("admin", generate_password_hash(tmpPW), common.generate_random_string(32)))
+	db.session.commit()
+	print "Created new user: admin / %s"%(tmpPW)
+
+	print "-"*100
+
