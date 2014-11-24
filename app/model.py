@@ -164,3 +164,10 @@ if "Config" not in saTables and "Path" not in saTables:
 
 	print "-"*100
 
+elif "Config" not in saTables:
+	# Temporary patch for those who are using depot
+	# version earlier than commit c0a0e1d
+	db.create_all()
+
+else: pass
+
