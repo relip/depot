@@ -144,46 +144,45 @@ class Config(db.Model):
 		self.Key = k
 		self.Value = v
 
+from flask.ext.migrate import Migrate
+from flask.ext.migrate import upgrade
+from flask.ext.migrate import stamp
+
 from sqlalchemy.engine.reflection import Inspector
 
 saInspector = Inspector.from_engine(db.engine)
 saTables = saInspector.get_table_names()
 
+migrate = Migrate(app, db)
 
-if "Config" not in saTables and "Path" not in saTables:
-	print "-"*100
-	print "Initializing..."
+with app.app_context() as c:
+	if "Config" not in saTables and "Path" not in saTables:
+		print "-"*100
+		print "Initializing..."
 
-	print "Creating tables..."
-#	db.create_all()
-	with app.app_context() as c:
-		from flask.ext.migrate import Migrate
-		from flask.ext.migrate import upgrade
-		migrate = Migrate(app, db)
+		print "Creating tables..."
+#		db.create_all()
 		upgrade()
 
-	print "Created tables successfully"
+		print "Created tables successfully"
 
-	tmpPW = common.generate_random_string(8)
+		tmpPW = common.generate_random_string(8)
 
-	from flask.ext.bcrypt import generate_password_hash, check_password_hash
+		from flask.ext.bcrypt import generate_password_hash, check_password_hash
 
-	print "Creating default user..."
-	db.session.add(User("admin", generate_password_hash(tmpPW), common.generate_random_string(32)))
-	db.session.commit()
-	print "Created new user: admin / %s"%(tmpPW)
+		print "Creating default user..."
+		db.session.add(User("admin", generate_password_hash(tmpPW), common.generate_random_string(32)))
+		db.session.commit()
+		print "Created new user: admin / %s"%(tmpPW)
 
-	print "-"*100
+		print "-"*100
 
-elif "Config" not in saTables:
-	# Temporary patch for those who are using depot
-	# version earlier than commit c0a0e1d
-	with app.app_context() as c:
-		from flask.ext.migrate import Migrate
-		from flask.ext.migrate import upgrade, stamp
-		migrate = Migrate(app, db)
-		stamp("710d5081fa7")
+	elif "Config" not in saTables:
+		# Temporary patch for those who are using depot
+		# version earlier than commit c0a0e1d
+		stamp(revision="710d5081fa7")
 		upgrade()
 
-else: pass
-
+	else:
+		# Check for any db updates
+		upgrade()
