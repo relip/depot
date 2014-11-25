@@ -413,7 +413,7 @@ def path_transmit(path, fileData):
 @login_required
 @check_if_path_is_valid(model.Path)
 def path_analyze(path, fileData):
-	fileHistory = model.History.query.filter(model.History.Path == path).all()
+	fileHistory = model.History.query.filter(model.History.Path == path).order_by(model.History.Time.desc()).all()
 	return render_template("path_analyze.html", path=fileData, history=fileHistory)
 
 @app.route("/<path>/modify")
