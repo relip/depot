@@ -149,12 +149,19 @@ from sqlalchemy.engine.reflection import Inspector
 saInspector = Inspector.from_engine(db.engine)
 saTables = saInspector.get_table_names()
 
+
 if "Config" not in saTables and "Path" not in saTables:
 	print "-"*100
 	print "Initializing..."
 
 	print "Creating tables..."
-	db.create_all()
+#	db.create_all()
+	with app.app_context() as c:
+		from flask.ext.migrate import Migrate
+		from flask.ext.migrate import upgrade
+		migrate = Migrate(app, db)
+		upgrade()
+
 	print "Created tables successfully"
 
 	tmpPW = common.generate_random_string(8)
@@ -171,7 +178,12 @@ if "Config" not in saTables and "Path" not in saTables:
 elif "Config" not in saTables:
 	# Temporary patch for those who are using depot
 	# version earlier than commit c0a0e1d
-	db.create_all()
+	with app.app_context() as c:
+		from flask.ext.migrate import Migrate
+                from flask.ext.migrate import upgrade, stamp
+                migrate = Migrate(app, db)
+		stamp("710d5081fa7")
+                upgrade()
 
 else: pass
 
