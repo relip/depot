@@ -180,10 +180,10 @@ elif "Config" not in saTables:
 	# version earlier than commit c0a0e1d
 	with app.app_context() as c:
 		from flask.ext.migrate import Migrate
-                from flask.ext.migrate import upgrade, stamp
-                migrate = Migrate(app, db)
+		from flask.ext.migrate import upgrade, stamp
+		migrate = Migrate(app, db)
 		stamp("710d5081fa7")
-                upgrade()
+		upgrade()
 
 else: pass
 
