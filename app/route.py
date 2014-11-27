@@ -112,12 +112,12 @@ def upload():
 			normalizedPath = os.path.abspath(request.form["path"]).lstrip("/")
 			normalizedFullPath = os.path.join(app.config["UPLOAD_BASE_DIR"], normalizedPath)
 			fd = file.store_local(normalizedPath)
-			newPath = model.create_path(fd.No, os.path.basename(normalizedFullPath), optExpiresIn, optDownloadLimit,
+			newPath = model.create_path(fd.No, os.path.basename(normalizedFullPath), "Web", optExpiresIn, optDownloadLimit,
 				optHideAfterLimitExceeded, optGroup)
 		else:
 			fp = request.files["file"]
 			fd = file.store(fp)
-			newPath = model.create_path(fd.No, fp.filename, optExpiresIn, optDownloadLimit,
+			newPath = model.create_path(fd.No, fp.filename, "Web", optExpiresIn, optDownloadLimit,
 				optHideAfterLimitExceeded, optGroup)
 
 		return json.dumps({"result": True, "path": newPath.Path})
