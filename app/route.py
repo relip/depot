@@ -112,13 +112,21 @@ def upload():
 			normalizedPath = os.path.abspath(request.form["path"]).lstrip("/")
 			normalizedFullPath = os.path.join(app.config["UPLOAD_BASE_DIR"], normalizedPath)
 			fd = file.store_local(normalizedPath)
-			newPath = model.create_path(fd.No, os.path.basename(normalizedFullPath), "Web", optExpiresIn, optDownloadLimit,
-				optHideAfterLimitExceeded, optGroup)
+			if request.form.get("slug", False): # urlencoded?
+				newPath = model.create_path_with_slug(fd.No, os.path.basename(normalizedFullPath), 
+					request.form["slug"], "Web", optExpiresIn, optDownloadLimit, optHideAfterLimitExceeded, optGroup)
+			else:
+				newPath = model.create_path(fd.No, os.path.basename(normalizedFullPath), "Web", 
+					optExpiresIn, optDownloadLimit, optHideAfterLimitExceeded, optGroup)
 		else:
 			fp = request.files["file"]
 			fd = file.store(fp)
-			newPath = model.create_path(fd.No, fp.filename, "Web", optExpiresIn, optDownloadLimit,
-				optHideAfterLimitExceeded, optGroup)
+			if request.form.get("slug", False):
+				newPath = model.create_path(fd.No, fp.filename, request.form["slug"],
+					"Web", optExpiresIn, optDownloadLimit, optHideAfterLimitExceeded, optGroup)
+			else:
+				newPath = model.create_path(fd.No, fp.filename, "Web", optExpiresIn, optDownloadLimit,
+					optHideAfterLimitExceeded, optGroup)
 
 		return json.dumps({"result": True, "path": newPath.Path})
 

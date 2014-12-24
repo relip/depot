@@ -31,6 +31,18 @@ def create_path(fileNo, fileName, method="Web", optExpiresIn=None, optDownloadLi
 
 	return newPath
 
+def create_path_with_slug(fileNo, fileName, slug, method="Web", optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
+	try:
+		newPath = Path(slug, fileNo, fileName, int(time.time()), method, request.remote_addr, 
+				optExpiresIn, optDownloadLimit,optHideAfterLimitExceeded, optGroup)
+		db.session.add(newPath)
+		db.session.commit()
+		return newPath
+	except IntegrityError:
+		print traceback.format_exc()
+		db.session.rollback()
+		return False
+
 class User(db.Model):
 	__tablename__ = "User"
 
