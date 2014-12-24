@@ -71,8 +71,8 @@ h4 { margin-top: 0px; }
 		</div>
 		{% if session["user_id"] %}
 		<div style="width: 100%">
-			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="/Qrv/delete">DELETE</a>
-			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="/Qrv/delete?with_file=1">DELETE WITH FILE</a>
+			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}">DELETE</a>
+			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}?with_file=1">DELETE WITH FILE</a>
 		</div>
 		{% endif %}
         </div>
