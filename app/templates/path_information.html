@@ -69,6 +69,12 @@ h4 { margin-top: 0px; }
 			<small>MD5 {{ data.File.MD5Sum | convertDBFlag }}<br />
 			SHA1 {{ data.File.SHA1Sum | convertDBFlag }}</small>
 		</div>
+		{% if session["user_id"] %}
+		<div style="width: 100%">
+			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="/Qrv/delete">DELETE</a>
+			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="/Qrv/delete?with_file=1">DELETE WITH FILE</a>
+		</div>
+		{% endif %}
         </div>
 
 </div>
