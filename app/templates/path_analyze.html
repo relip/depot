@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+	<h1>{{ path.Path }}</h1>
+	<table class="table table-striped">
+		<tbody>
+			<tr><th>Downloaded</th><td>{{ path.Downloaded }} times</td><th>Limitations</th><td>DL limit {{ path.DownloadLimit }} times, expires in {{ path.ExpiresIn }} after uploaded</td></tr>
+		</tbody>
+	</table>
+	<h2>Statistics</h2>
+	<style>
+
+#chart svg {
+	width: 100%;
+  height: 400px;
+}
+
+</style>
+	<link href="/static/css/nv.d3.css" rel="stylesheet">
+	<div id="chart">
+		<svg></svg>
+	</div>
+	<script src="http://nvd3.org/assets/lib/d3.v3.js"></script>
+	<script src="http://nvd3.org/assets/js/nv.d3.js"></script>
+	<script>
+	var rawData = [{% for h in history %}{{h.Time}},{% endfor %}]
+	var pData = {}
+	var pt = undefined;
+	function roundDate(t)
+	{
+		return t + -(t % (60*60*24)) + 3600*24;
+	}
+	// Truncate dataset from latest hit to today
+	var uploaded = roundDate({{ path.Uploaded }});
+	var today = roundDate(((new Date()).getTime()/1000));
+	diff = today/(3600*24) - uploaded/(3600*24);
+	for(var ii = 0; ii <= diff; ii++)
+	{
+		pData[uploaded+ii*3600*24] = 0;
+	}
+
+	for (var i in rawData)
+	{
+		var t = roundDate(rawData[i]);
+		pData[t]++;
+
+	}
+
+	console.log(pData);
+	var data = [];
+
+	for (var i in pData)
+	{
+		console.log(pData[i]);
+		data.push({x: i, y: pData[i]});
+	}
+
+	nv.addGraph(function() {
+		var chart = nv.models.lineWithFocusChart();
+		chart.size(100);
+		chart.xAxis
+			.tickFormat(function(d){ return d3.time.format('%b %d')(new Date(d*1000)) });
+		chart.x2Axis
+			.tickFormat(function(d){ return d3.time.format('%b %d')(new Date(d*1000)) });
+		chart.yAxis
+			.tickFormat(d3.format('d'));
+		chart.yDomain([0, d3.max(data.map(function(d) { return d.y; }))]);
+
+		chart.y2Axis
+		  .tickFormat(d3.format('d'));
+
+		d3.select('#chart svg')
+		  .datum([{key: "Hits", values: data}])
+		  .transition().duration(500)
+		  .call(chart);
+
+		nv.utils.windowResize(chart.update);
+
+		return chart;
+	});
+	</script>
+	<h2>History</h2>
+	<table class="table table-striped">
+		<thead>
+			<tr><th>IP</th><th>Requested date</th><th>User agent</th><th>Referrer</th><th>Country</th></tr>
+		</thead>
+		<tbody>
+		{% for h in history %}
+			<tr><td>{{ h.IP }}</td><td>{{ h.Time | convertTime }}</td><td style="white-space:normal">{{ h.UserAgent }}</td><td>{{ h.Referrer }}</td><td>{{ h.Country }}</td></tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

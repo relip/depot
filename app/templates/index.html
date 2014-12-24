@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<title></title>
+	<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+	<style>
+	body {
+		font-family: Lato;
+		color: #00004A;
+	}	
+	a, a:visited,a:hover {
+		color: #FFFFFF;
+		text-decoration: none;
+	}
+	#menu {
+		text-align: center;
+		width: 100%;
+		background-color: #00004A;
+		color: #FFFFFF;
+		padding: 5px;
+		display: inline-block;
+	}
+	</style>
+</head>
+<body>
+	<div style="position:absolute; top:50%; left:50%; width:500px; height:250px; margin-top:-125px; margin-left:-250px">
+		<img src="/static/img/logo.png" width="500px" />
+		<a href="{{ url_for("signin") }}" id="menu">Sign in</a>
+	</div>
+</body>
+</html>
+

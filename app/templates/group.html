@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/javascript" src="/static/js/group.js"></script>
+<h2>{{ groupData.Path }} <br />
+<small>{{ groupData.Description }}{%- if session["user_id"] %}<span class="glyphicon glyphicon-pencil edit-description" data-path="{{groupData.Path}}" aria-hidden="true"></span>{%- endif %}</small>
+</h2>
+<a class="depot-box" href="{{ url_for("group_zip", path=groupData.Path) }}">Download ZIP file</a>
+<table class="table table-striped">
+	<thead>
+		<tr><th>Path</th><th style="width: 100%">File name</th><th>Size</th><th>Uploaded</th><th>Download limit</th><th>Expires in</th><th>Direct download</th></tr>
+	</thead>
+	<tbody>
+		{% for p in groupData.Paths %}
+		<tr><td><a href="{{ url_for("path_information", path=p.Path) }}">{{ p.Path }}</a></td><td>{{ p.ActualName }}</td><td>{{ p.File.Size | convertSize }}</td><td>{{ p.Uploaded | convertTime }}</td>
+			{% if (p.DownloadLimit != None and  p.Downloaded >= p.DownloadLimit) or (p.ExpiresIn != None and  time >= p.ExpiresIn + time) %}
+				<th colspan="2"><span style="color: red">Not available</span></th>
+			{% else %}
+				<td>{{ p.Downloaded }} / {{ "unlimited" if p.DownloadLimit == None else p.DownloadLimit }}</td>
+				<td>{{ "unlimited" if p.ExpiresIn == None else p.ExpiresIn }}</td>
+				<td><a href="{{ url_for("path_transmit", path=p.Path) }}">Click to download</a></td>
+			{% endif %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+		
+{% endblock %}
