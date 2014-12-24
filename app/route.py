@@ -128,7 +128,10 @@ def upload():
 				newPath = model.create_path(fd.No, fp.filename, "Web", optExpiresIn, optDownloadLimit,
 					optHideAfterLimitExceeded, optGroup)
 
-		return json.dumps({"result": True, "path": newPath.Path})
+		if newPath:
+			return json.dumps({"result": True, "path": newPath.Path})
+		else:
+			return json.dumps({"result": False, "message": "An illegal character has been found"})
 
 	else:
 		return render_template("upload.html")
