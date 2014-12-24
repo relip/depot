@@ -53,7 +53,7 @@ def load_user(uid):
 
 @login_manager.unauthorized_handler
 def unauthorized():
-	return abort(404)
+	return render_template("no_such_file.html")
 
 # Decorators
 
