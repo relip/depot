@@ -32,6 +32,9 @@ def create_path(fileNo, fileName, method="Web", optExpiresIn=None, optDownloadLi
 	return newPath
 
 def create_path_with_slug(fileNo, fileName, slug, method="Web", optExpiresIn=None, optDownloadLimit=None, optHideAfterLimitExceeded=None, optGroup=None):
+	illegal_chars = ["/", "\\", "$", ":", "&", "*", "#", "!"] # From RFC 3986 except [ ] ( ) , @ '
+	if any((c in illegal_chars) for c in slug):
+		return False
 	try:
 		newPath = Path(slug, fileNo, fileName, int(time.time()), method, request.remote_addr, 
 				optExpiresIn, optDownloadLimit,optHideAfterLimitExceeded, optGroup)
