@@ -1,7 +1,7 @@
 Depot
 =====
 
-Depot is a simple Flask-based file sharing platform for individual use.
+Depot is a simple Flask-based self-hosted file sharing platform for individual use.
 
 **HTML templates are still work in progress**
 
