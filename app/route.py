@@ -139,8 +139,7 @@ def upload():
 @app.route("/api/regenerate_key")
 @login_required
 def api_regenerate_key():
-	uinfo = load_user(session["user_id"])
-	uinfo.APIKey = common.generate_random_string(32)
+	current_user.APIKey = common.generate_random_string(32)
 	db.session.commit()
 	return redirect(url_for("overview"))
 
@@ -360,7 +359,6 @@ def signup():
 @app.route("/overview")
 @login_required
 def overview():
-	uinfo = load_user(session["user_id"])
 	paths = model.Path.query.order_by(model.Path.Uploaded.desc())
 
 	try:
@@ -376,7 +374,8 @@ def overview():
 	fileSizeSum = db.session.query(sqlalchemy.func.sum(model.File.Size).label("sum")).all()
 
 	return render_template("overview.html", paths=pathList.all(), pathCount=pathCount,
-		pathSizeSum=pathSizeSum, fileSizeSum=fileSizeSum, userInfo=uinfo)
+		pathSizeSum=pathSizeSum, fileSizeSum=fileSizeSum, userInfo=current_user)
+
 
 # Path related
 
