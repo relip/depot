@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block content %}
+{{ request.url_root | urljoin(url_for("api_tweetbot")+"?api_key="+userInfo.APIKey) }}
+{% endblock %}

@@ -376,6 +376,11 @@ def overview():
 	return render_template("overview.html", paths=pathList.all(), pathCount=pathCount,
 		pathSizeSum=pathSizeSum, fileSizeSum=fileSizeSum, userInfo=current_user)
 
+@app.route("/settings")
+@login_required
+def settings():
+	print current_user
+	return render_template("settings.html", userInfo=current_user)
 
 # Path related
 
