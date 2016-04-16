@@ -122,7 +122,7 @@ def upload():
 			fp = request.files["file"]
 			fd = file.store(fp)
 			if request.form.get("slug", False):
-				newPath = model.create_path(fd.No, fp.filename, request.form["slug"],
+				newPath = model.create_path_with_slug(fd.No, fp.filename, request.form["slug"],
 					"Web", optExpiresIn, optDownloadLimit, optHideAfterLimitExceeded, optGroup)
 			else:
 				newPath = model.create_path(fd.No, fp.filename, "Web", optExpiresIn, optDownloadLimit,
