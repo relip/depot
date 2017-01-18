@@ -13,53 +13,7 @@
 	<!-- Latest compiled and minified JavaScript -->
 	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 	<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
-	<style>
-	/* Move down content because we have a fixed navbar that is 50px tall */
-	body {
-		font-family: Lato;
-		background-color: #f6f5f3;
-		padding-top: 60px;
-		padding-bottom: 20px;
-		color: #00004A;
-	}
-	a {
-		color: #000;
-	}
-	.navbar-inverse .navbar-nav>li>a,.navbar-brand {
-		background-color: #00004A;
-		color: #FFFFFF !important;
-	}
-	.depot-box {
-		white-space: nowrap;
-		background-color: #00004A;
-		text-align: center;
-		color: #FFFFFF;
-		padding: 5px;
-		border: 0;
-	}
-	a.depot-box:hover {
-		color: #FFF;
-	}
-	button.depot-box {
-		margin-left: 1px;
-		border: 1px solid transparent;
-		font-size: 14px;
-		padding: 6px 12px;
-	}
-	button.depot-box:hover {
-		background-color: #000017;
-	}
-	button.depot-box:disabled {
-		background-color: #000000;
-	}
-	.navbar-inverse {
-		background-image: #FFF;
-		background-color: #00004A;
-	}
-	td, th {
-		white-space: nowrap;
-	}
-</style>
+	<link href='/static/css/depot.css' rel='stylesheet' type='text/css'>
 </head>
 <body>
 	{% if session["user_id"] %}

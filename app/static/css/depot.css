@@ -1,0 +1,91 @@
+
+.details {
+	font-size: 1.5em;
+}
+
+body {
+	background-color: #f6f5f3;
+	font-family: Lato;
+	background-color: #f6f5f3;
+	padding-top: 60px;
+	padding-bottom: 20px;
+	color: #00004A;
+}
+
+a {
+	color: #000;
+}
+
+.navbar-inverse .navbar-nav>li>a,.navbar-brand {
+	background-color: #00004A;
+	color: #FFFFFF !important;
+}
+
+.depot-box {
+	white-space: nowrap;
+	background-color: #00004A;
+	text-align: center;
+	color: #FFFFFF;
+	padding: 5px;
+	border: 0;
+}
+
+a.depot-box:hover {
+	color: #FFF;
+}
+
+button.depot-box {
+	margin-left: 1px;
+	border: 1px solid transparent;
+	font-size: 14px;
+	padding: 6px 12px;
+}
+button.depot-box:hover {
+	background-color: #000017;
+}
+button.depot-box:disabled {
+	background-color: #000000;
+}
+.navbar-inverse {
+	background-image: #FFF;
+	background-color: #00004A;
+}
+td, th {
+	white-space: nowrap;
+}
+
+.path-card {
+	width: 100%;
+	background-color: #FFFFFF;
+	margin-top: 2px;
+	padding: 20px;
+}
+
+.path-card .path-left {
+	display: inline-block;
+}
+
+.path-card .path-left .path-name {
+	font-size: 20px;
+}
+
+.path-card .path-left .path-data {
+	margin-right: 10px;
+	font-size: 13px;
+}
+
+.path-card .path-left .path-menu a {
+	color: #999;
+}
+
+.path-card .path-right {
+}
+
+.path-card .path-right .path-data {
+	margin-bottom: 5px;
+/*	text-align: right;*/
+}
+
+.path-card .path-right .path-data .glyphicon {
+	margin-right: 5px;
+}

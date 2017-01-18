@@ -216,7 +216,13 @@ $(function () {
 	$(".selectButton").click(function() {
 		$(".fileInput").click();
 	});
+
 	$("#filenameInput").click(function()
+	{
+		$(".fileInput").click();
+	});
+
+	$("#upload-instant-form").click(function()
 	{
 		$(".fileInput").click();
 	});
