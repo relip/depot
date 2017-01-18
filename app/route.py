@@ -359,6 +359,17 @@ def signup():
 @app.route("/overview")
 @login_required
 def overview():
+	paths = model.Path.query.order_by(model.Path.Uploaded.desc()).limit(10).all()
+	groups = model.Group.query.limit(10).all()
+
+	return render_template("overview.html",
+		paths=paths,
+		groups=groups,
+	)
+
+@app.route("/recents")
+@login_required
+def recents():
 	paths = model.Path.query.order_by(model.Path.Uploaded.desc())
 
 	try:
@@ -373,7 +384,7 @@ def overview():
 	pathSizeSum = db.session.query(sqlalchemy.func.sum(model.File.Size).label("sum")).join(model.Path.File).all()
 	fileSizeSum = db.session.query(sqlalchemy.func.sum(model.File.Size).label("sum")).all()
 
-	return render_template("overview.html", paths=pathList.all(), pathCount=pathCount,
+	return render_template("recents.html", paths=pathList.all(), pathCount=pathCount,
 		pathSizeSum=pathSizeSum, fileSizeSum=fileSizeSum, userInfo=current_user)
 
 @app.route("/settings")

@@ -1,31 +1,54 @@
 {% extends "base.html" %}
 {%- block content %}
 <style>
-.upload-container {
-	border-style: dashed;
-	color: #00004a;
-	height: 200px;
+.details {
+	font-size: 1.5em;
 }
 
-.upload-container-text {
-	text-align: center;
-	height: 144px;
-	margin-top: 53px;
+body {
+	background-color: #f6f5f3;
 }
+
+.path-card {
+	width: 100%;
+	background-color: #FFFFFF;
+	margin-top: 2px;
+	padding: 20px;
+}
+
+.path-card .path-left {
+	display: inline-block;
+}
+
+.path-card .path-left .path-name {
+	font-size: 20px;
+}
+
+.path-card .path-left .path-data {
+	margin-right: 10px;
+	font-size: 13px;
+}
+
+.path-card .path-left .path-menu a {
+	color: #999;
+}
+
+.path-card .path-right {
+}
+
+.path-card .path-right .path-data {
+	margin-bottom: 5px;
+/*	text-align: right;*/
+}
+
+.path-card .path-right .path-data .glyphicon {
+	margin-right: 5px;
+}
+
 </style>
-<script type="text/javascript" src="/static/js/upload.js"></script>
-<form id="upload-instant-form" role="form" enctype="multipart/form-data">
-	<input type="file" class="fileInput" style="display: none;" />
-	<div class="upload-container" id="filenameInput">
-		<div class="upload-container-text">
-			<span class="glyphicon glyphicon-file" style="font-size: 50px" aria-hidden="true"></span><br />
-			Drag your file and drop here<br />
-			<small>... or click this area</button></small>
-		</div>
-	</div>
-</form>
+<div class="details">
+</div>
 <h2>Recents</h2>
-
 {%- for path in paths %}
 	<div class="path-card row">
 		<div class="path-left col-sm-4">
@@ -43,4 +66,11 @@
 		</div>
 	</div>
 {%- endfor %} 
+<nav>
+	<ul class="pagination">
+	{%- for page in range(1, ((pathCount/50) | round(0, 'ceil') | int)+2) %}
+		<li {% if request.args.get("page", "1") == (page|string) %}class="active"{% endif %}><a href="{{url_for("recents")}}?page={{page}}">{{page}}</a></li>
+	{%- endfor %}
+	</ul>
+</nav>
 {%- endblock %}
