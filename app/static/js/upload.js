@@ -230,7 +230,6 @@ $(function () {
 	$(".fileInput").change(function()
 	{
 		if ($(this).val().length <= 0) { return; }
-		$("#filenameInput").css({ 'text-align': 'left' });
  
 		var filenames = [];
 		$.each($(this).prop("files"), function(i, fo)
@@ -241,11 +240,21 @@ $(function () {
 			filenames.push(tempfn);
 		});
 
-		$("#filenameInput").val(filenames.join(", "));
+		if ($(this).attr("class").indexOf("instant") > -1)
+		{
+			$("#filenameInput").text(filenames.join(", "));
+			$(".uploadButton").show();
+		}
+		else
+		{
+			$("#filenameInput").css({ 'text-align': 'left' });
+			$("#filenameInput").val(filenames.join(", "));
+		}
 	});
+
    	$(document).on("click", ".uploadButton", function()
 	{
-		if($("#filenameInput").val())
+		if($(".fileInput").prop("files").length > 0)
 			$("#uploadForm").submit();
 	});
 	$("#uploadForm").submit(function (e)

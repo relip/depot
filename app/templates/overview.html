@@ -4,7 +4,7 @@
 .upload-container {
 	border-style: dashed;
 	color: #00004a;
-	height: 200px;
+	padding: 20px;
 }
 
 .upload-container-text {
@@ -13,14 +13,24 @@
 	margin-top: 53px;
 }
 </style>
-<script type="text/javascript" src="/static/js/upload.js"></script>
-<form id="upload-instant-form" role="form" enctype="multipart/form-data">
-	<input type="file" class="fileInput" style="display: none;" />
-	<div class="upload-container" id="filenameInput">
-		<div class="upload-container-text">
-			<span class="glyphicon glyphicon-file" style="font-size: 50px" aria-hidden="true"></span><br />
-			Drag your file and drop here<br />
-			<small>... or click this area</button></small>
+<script type="text/javascript" src="/static/js/upload.js?t=3"></script>
+<form role="form" enctype="multipart/form-data" id="uploadForm">
+	<input type="file" class="fileInput instant" style="display: none;" />
+	<div class="upload-container">
+		<div id="upload-instant-form" ondrop="handleFileSelect(event)" ondragover="handleDragOver(event)">
+			<div class="upload-container-text">
+				<span class="glyphicon glyphicon-file" style="font-size: 50px" aria-hidden="true"></span><br />
+				Drag your file and drop here<br />
+				<small>... or click this area</button></small>
+				<div>
+				</div>
+			</div>
+		</div>
+		<div>
+			<span id="filenameInput"></span>
+			<button type="button" class="depot-box uploadButton" style="width: 100px; font-size: 14px; padding: 6px 12px;margin-left: 1px; display:none">Upload</button>
+			<ul id="uploadList" class="list-group">
+			</ul>
 		</div>
 	</div>
 </form>

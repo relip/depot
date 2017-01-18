@@ -57,7 +57,7 @@ td, th {
 .path-card {
 	width: 100%;
 	background-color: #FFFFFF;
-	margin-top: 2px;
+	margin: 2px 0 0 0 !important;
 	padding: 20px;
 }
 

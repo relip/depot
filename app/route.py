@@ -390,7 +390,6 @@ def recents():
 @app.route("/settings")
 @login_required
 def settings():
-	print current_user
 	return render_template("settings.html", userInfo=current_user)
 
 # Path related
