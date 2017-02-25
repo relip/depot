@@ -18,24 +18,26 @@ h4 { margin-top: 0px; }
 	bottom: 0;
 	margin: auto;
 	width: 500px;
-	height: 100px;
+	height: 200px;
 }
 
 .pi_download_button {
-	width: 100px; 
+	width: 100px;
 	display: inline-block;
+	padding: 30px 0;
 }
 
 .pi_path_information {
-	width: 390px;
-	position: absolute;
+	width: 364px;
 	display: inline-block;
-	margin-left: 10px;
+	margin-left: 30px;
+	margin-bottom: 10px;
 }
 
 @media (max-width: 768px) {
 	.pi_download_button {
 		margin: auto;
+		padding: 10px 0;
 		width: 100px;
 		display: block;
 	}
@@ -47,6 +49,8 @@ h4 { margin-top: 0px; }
 	}
 	.vcenter {
 		width: 100%;
+		height: 300px;
+		padding: 0 10px;
 	}
 }
 
@@ -60,19 +64,28 @@ h4 { margin-top: 0px; }
 	                </div>
 		</div>
 		<div class="pi_path_information">
-			<h4 style="text-align: center;">{{ data.ActualName }}</h4>
-			<span class="glyphicon glyphicon-cloud-download" aria-hidden="true"> </span> {{ data.Downloaded }} / {{ data.DownloadLimit if data.DownloadLimit else "unlimited" }}
-			<span class="glyphicon glyphicon-file" aria-hidden="true"> </span> {{ data.File.Size | convertSize }} 
-			<span class="glyphicon glyphicon-time" aria-hidden="true"> </span> {{ data.Uploaded | convertTime }}
-			<span class="glyphicon glyphicon-fire" aria-hidden="true"> </span> {{ data.ExpiresIn if data.ExpiresIn else "Never" }}
+			<h3 style="text-align: center; margin-top: 0;">{{ data.ActualName }}</h3>
+			<span class="glyphicon glyphicon-cloud-download text-muted" aria-hidden="true"> </span>
+			{{ data.Downloaded }} / {{ data.DownloadLimit if data.DownloadLimit else "unlimited" }}
 			<br />
-			<small>MD5 {{ data.File.MD5Sum | convertDBFlag }}<br />
-			SHA1 {{ data.File.SHA1Sum | convertDBFlag }}</small>
+			<span class="glyphicon glyphicon-file text-muted" aria-hidden="true"> </span>
+			{{ data.File.Size | convertSize }}
+			<br />
+			<span class="glyphicon glyphicon-time text-muted" aria-hidden="true"> </span>
+			{{ data.Uploaded | convertTime }}
+			<br />
+			<span class="glyphicon glyphicon-fire text-muted" aria-hidden="true"> </span>
+			{{ data.ExpiresIn if data.ExpiresIn else "Never" }}
+			<br />
+			<small class="text-muted">
+				MD5: {{ data.File.MD5Sum | convertDBFlag }}<br />
+				SHA1: {{ data.File.SHA1Sum | convertDBFlag }}
+			</small>
 		</div>
 		{% if session["user_id"] %}
-		<div style="width: 100%">
-			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}">DELETE</a>
-			<a style="display: inline-block; width: 49%; background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}?with_file=1">DELETE WITH FILE</a>
+		<div style="width: 100%;">
+			<a style="display: inline-block; width: calc(50% - 2.5px); background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}">DELETE</a>
+			<a style="display: inline-block; width: calc(50% - 2.5px); background-color: red;" class="depot-box" href="{{ url_for("path_delete", path=request.path) }}?with_file=1">DELETE WITH FILE</a>
 		</div>
 		{% endif %}
         </div>
