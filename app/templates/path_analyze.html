@@ -56,7 +56,7 @@
 
 	nv.addGraph(function() {
 		var chart = nv.models.lineWithFocusChart();
-		chart.size(100);
+		chart.height(400);
 		chart.xAxis
 			.tickFormat(function(d){ return d3.time.format('%b %d')(new Date(d*1000)) });
 		chart.x2Axis
