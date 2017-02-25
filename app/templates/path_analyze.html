@@ -19,8 +19,8 @@
 	<div id="chart">
 		<svg></svg>
 	</div>
-	<script src="http://nvd3.org/assets/lib/d3.v3.js"></script>
-	<script src="http://nvd3.org/assets/js/nv.d3.js"></script>
+	<script src="https://d3js.org/d3.v3.js"></script>
+	<script src="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.min.js"></script>
 	<script>
 	var rawData = [{% for h in history %}{{h.Time}},{% endfor %}]
 	var pData = {}
